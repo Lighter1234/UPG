@@ -5,6 +5,7 @@ import waterflowsim.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class for drawing of the simulation on the canvas
@@ -41,12 +42,12 @@ public class Panel extends JPanel {
     /**
      * Constant that defines width of the "real-world"
      */
-    private final int SIM_WIDTH;
+    private final double SIM_WIDTH;
 
     /**
      * Constant that defines height of the "real-world"
      */
-    private final int SIM_HEIGHT;
+    private final double SIM_HEIGHT;
 
     /**
      * Defines width of canvas
@@ -63,6 +64,25 @@ public class Panel extends JPanel {
      */
     private double scale;
 
+    /**
+     * Defines width of one cell
+     */
+    private double deltaX;
+
+    /**
+     * Defines height of one cell
+     */
+    private double deltaY;
+
+    /**
+     * Ammount of cells in a row
+     */
+    private final int AMMOUNT_OF_CELLS_WIDTH;
+
+    /**
+     * Ammount of cells in a column
+     */
+    private  final int AMMOUNT_OF_CELLS_HEIGHT;
 
 
 
@@ -78,13 +98,22 @@ public class Panel extends JPanel {
      *
      * @param sim Instance of simulation
      */
-    public Panel(Simulator sim){
+    public Panel(int scenario){
 
-            this.sim = sim;
-            this.INFO = this.sim.getData();
+        Simulator.runScenario(scenario);
+            this.INFO = Simulator.getData();
 
-            this.SIM_HEIGHT = Simulator.getDimension().x;
-            this.SIM_WIDTH = Simulator.getDimension().y;
+            Vector2D<Double> delta = Simulator.getDelta();
+            Vector2D<Integer> dimension = Simulator.getDimension();
+
+            this.AMMOUNT_OF_CELLS_WIDTH = dimension.x;
+            this.AMMOUNT_OF_CELLS_HEIGHT = dimension.y;
+
+            this.deltaX = delta.x;
+            this.deltaY = delta.y;
+
+            this.SIM_WIDTH = deltaX * AMMOUNT_OF_CELLS_WIDTH;
+            this.SIM_HEIGHT = deltaY * AMMOUNT_OF_CELLS_HEIGHT;
 
             computeModelDimensions();
 
@@ -111,13 +140,12 @@ public class Panel extends JPanel {
     private void computeModelDimensions(){
 
         Vector2D<Double> start = Simulator.getStart();
-        Vector2D<Double> delta = Simulator.getDelta();
 
             this.startXSim = start.x;
             this.startYSim = start.y;
 
-            this.endXSim = delta.x * SIM_WIDTH + this.startXSim;
-            this.endYSim = delta.y * SIM_HEIGHT + this.startYSim;
+            this.endXSim = SIM_WIDTH + this.startXSim;
+            this.endYSim = SIM_HEIGHT + this.startYSim;
 
     }
 
@@ -153,7 +181,9 @@ public class Panel extends JPanel {
 
 
     private void drawWaterFlowState(Graphics2D g){
+    //TODO finish
 
+        drawWaterLayer(g);
 
 
 
@@ -172,7 +202,27 @@ public class Panel extends JPanel {
 
 
     private void drawWaterLayer(Graphics2D g){
-        //TODO finish
+
+            for(int i = 0 ; i < INFO.length ; i++){
+
+                Cell tmp = INFO[0];
+
+                double tmpStartingX = this.startXSim;
+                double tmpStartingY = this.startYSim;
+
+                if(tmp.isDry()){
+                    g.setColor(new Color(20,20,20));
+
+                }else{
+                    g.setColor(new Color(40,20,100));
+                }
+                g.draw(new Rectangle2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * this.deltaX
+                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * this.deltaY, deltaX, deltaY));
+
+            }
+
+            //TODO finish
+
 
     }
 
