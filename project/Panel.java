@@ -96,21 +96,24 @@ public class Panel extends JPanel {
     /**
      * Constructor to create a canvas for modeling water flow
      *
-     * @param sim Instance of simulation
+     * @param scenario Number of scenario
      */
     public Panel(int scenario){
 
-        Simulator.runScenario(scenario);
+            Simulator.runScenario(scenario);
+
             this.INFO = Simulator.getData();
 
+            //Getting info about Simulation
             Vector2D<Double> delta = Simulator.getDelta();
             Vector2D<Integer> dimension = Simulator.getDimension();
 
+            //Setting up parameters for drawing on canvas from simulation
             this.AMMOUNT_OF_CELLS_WIDTH = dimension.x;
             this.AMMOUNT_OF_CELLS_HEIGHT = dimension.y;
 
-            this.deltaX = delta.x;
-            this.deltaY = delta.y;
+            this.deltaX = Math.abs(delta.x);
+            this.deltaY = Math.abs(delta.y);
 
             this.SIM_WIDTH = deltaX * AMMOUNT_OF_CELLS_WIDTH;
             this.SIM_HEIGHT = deltaY * AMMOUNT_OF_CELLS_HEIGHT;
@@ -123,7 +126,7 @@ public class Panel extends JPanel {
 
 
     @Override
-    public void paint(Graphics g){
+    public void paintComponent(Graphics g){
 
             Graphics2D g2 = (Graphics2D) g;
 
@@ -142,7 +145,7 @@ public class Panel extends JPanel {
         Vector2D<Double> start = Simulator.getStart();
 
             this.startXSim = start.x;
-            this.startYSim = start.y;
+            this.startYSim = -start.y;
 
             this.endXSim = SIM_WIDTH + this.startXSim;
             this.endYSim = SIM_HEIGHT + this.startYSim;
@@ -162,8 +165,10 @@ public class Panel extends JPanel {
         this.widthOfCanvas = width;
         this.heightOfCanvas = height;
 
-        this.scale = Math.max(this.endXSim / this.widthOfCanvas,
-                        this.endYSim/ this.heightOfCanvas);
+        this.scale = Math.min(width/this.SIM_WIDTH,
+                height/this.SIM_HEIGHT);
+//TODO control
+
 
     }
 
@@ -175,8 +180,8 @@ public class Panel extends JPanel {
      * @return remodeled Point2D into canvas
      */
     private Point2D model2window(Point2D m){
-        return new Point2D.Double(m.getX() * this.scale,
-                m.getY() * this.scale - this.heightOfCanvas);
+        return new Point2D.Double(((m.getX()-startXSim) * this.scale)-(startXSim*this.scale),
+                (this.heightOfCanvas - (m.getY() - startYSim) * this.scale) + (startYSim*this.scale) );
     }
 
 
@@ -205,26 +210,49 @@ public class Panel extends JPanel {
 
             for(int i = 0 ; i < INFO.length ; i++){
 
-                Cell tmp = INFO[0];
+                Cell tmp = INFO[i];
 
                 double tmpStartingX = this.startXSim;
                 double tmpStartingY = this.startYSim;
 
                 if(tmp.isDry()){
-                    g.setColor(new Color(20,20,20));
+                    g.setColor(new Color(20,255,20));
 
                 }else{
-                    g.setColor(new Color(40,20,100));
+                  //  System.out.println("Here");
+                    g.setColor(new Color(40,20,255));
                 }
-                g.draw(new Rectangle2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * this.deltaX
-                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * this.deltaY, deltaX, deltaY));
+                Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * this.deltaX
+                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * this.deltaY);
+
+                tmpPoint = this.model2window(tmpPoint);
+
+                System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
+                        + " deltaX:" + deltaX + " deltaY: "+ deltaY + " scale: " + scale );
+                g.draw(new Rectangle2D.Double(tmpPoint.getX(),tmpPoint.getY(), deltaX, deltaY ));
 
             }
 
+           this.drawWaterSources(g);
             //TODO finish
 
 
     }
+
+            private void drawWaterSources(Graphics2D g){
+
+
+
+                //TODO finish
+    }
+
+
+            private void drawWaterFlowLabel(Point2D position, Vector2D dirFlow, String name, Graphics2D g){
+
+
+                //TODO finish
+
+            }
 
 
 
