@@ -84,6 +84,16 @@ public class Panel extends JPanel {
      */
     private  final int AMMOUNT_OF_CELLS_HEIGHT;
 
+    /**
+     * Variable to create a little space from the corners of the canvas
+     */
+    private double OFFSET_X;
+
+    /**
+     * Variable to create a little space from the corners of the canvas
+     */
+    private double OFFSET_Y;
+
 
 
 
@@ -92,6 +102,11 @@ public class Panel extends JPanel {
      */
     private final Cell[] INFO;
 
+
+    /**
+     * Array of points so there's no need for recalculating them again
+     */
+    private final Point2D[] POINTS;
 
     /**
      * Constructor to create a canvas for modeling water flow
@@ -109,8 +124,8 @@ public class Panel extends JPanel {
             Vector2D<Integer> dimension = Simulator.getDimension();
 
             //Setting up parameters for drawing on canvas from simulation
-            this.AMMOUNT_OF_CELLS_WIDTH = dimension.x;
-            this.AMMOUNT_OF_CELLS_HEIGHT = dimension.y;
+            this.AMMOUNT_OF_CELLS_WIDTH = Math.abs(dimension.x);
+            this.AMMOUNT_OF_CELLS_HEIGHT = Math.abs(dimension.y);
 
             this.deltaX = Math.abs(delta.x);
             this.deltaY = Math.abs(delta.y);
@@ -118,15 +133,19 @@ public class Panel extends JPanel {
             this.SIM_WIDTH = deltaX * AMMOUNT_OF_CELLS_WIDTH;
             this.SIM_HEIGHT = deltaY * AMMOUNT_OF_CELLS_HEIGHT;
 
+            this.POINTS = new Point2D[INFO.length];
+
+            setPoints();
+
             computeModelDimensions();
-
-
 
         }
 
 
     @Override
     public void paintComponent(Graphics g){
+            super.paintComponent(g);
+//        System.out.println("Hello");
 
             Graphics2D g2 = (Graphics2D) g;
 
@@ -145,10 +164,15 @@ public class Panel extends JPanel {
         Vector2D<Double> start = Simulator.getStart();
 
             this.startXSim = start.x;
-            this.startYSim = -start.y;
+            this.startYSim = start.y;
 
             this.endXSim = SIM_WIDTH + this.startXSim;
             this.endYSim = SIM_HEIGHT + this.startYSim;
+
+        System.out.println("StartX: " + startXSim  + " startY: " + startYSim
+         + " endX: " + endXSim + " endY: " + endYSim
+        + " DeltaX: " + deltaX + " deltaY: " + deltaY);
+
 
     }
 
@@ -165,9 +189,25 @@ public class Panel extends JPanel {
         this.widthOfCanvas = width;
         this.heightOfCanvas = height;
 
-        this.scale = Math.min(width/this.SIM_WIDTH,
-                height/this.SIM_HEIGHT);
-//TODO control
+        double scaleX = width/this.SIM_WIDTH;
+        double scaleY = height/this.SIM_HEIGHT;
+
+//        this.scale = Math.min(scaleX,
+//                scaleY);
+
+    /*    if(scale > 1){
+            this.scale = 1.0 / this.scale;
+        }*/
+
+        if (scaleX < scaleY) {
+            scale = scaleX;
+            OFFSET_X = 0;
+            OFFSET_Y = (this.getHeight() - this.SIM_HEIGHT*scale) / 2;
+        } else {
+            scale = scaleY;
+            OFFSET_X = (this.getWidth() - this.SIM_WIDTH*scale) / 2;
+            OFFSET_Y = 0;
+        }
 
 
     }
@@ -180,8 +220,8 @@ public class Panel extends JPanel {
      * @return remodeled Point2D into canvas
      */
     private Point2D model2window(Point2D m){
-        return new Point2D.Double(((m.getX()-startXSim) * this.scale)-(startXSim*this.scale),
-                (this.heightOfCanvas - (m.getY() - startYSim) * this.scale) + (startYSim*this.scale) );
+        return new Point2D.Double(((m.getX()-startXSim) * this.scale) + OFFSET_X,
+                (((m.getY() - startYSim) * this.scale))+ OFFSET_Y) ;
     }
 
 
@@ -189,7 +229,7 @@ public class Panel extends JPanel {
     //TODO finish
 
         drawWaterLayer(g);
-
+        drawWaterSources(g);
 
 
     }
@@ -208,27 +248,29 @@ public class Panel extends JPanel {
 
     private void drawWaterLayer(Graphics2D g){
 
+
+        double tmpStartingX = this.startXSim;
+        double tmpStartingY = this.startYSim;
+
             for(int i = 0 ; i < INFO.length ; i++){
 
                 Cell tmp = INFO[i];
 
-                double tmpStartingX = this.startXSim;
-                double tmpStartingY = this.startYSim;
-
                 if(tmp.isDry()){
-                    g.setColor(new Color(20,255,20));
+                    g.setColor(new Color(100,255,100));
 
                 }else{
-                  //  System.out.println("Here");
                     g.setColor(new Color(40,20,255));
                 }
-                Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * this.deltaX
-                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * this.deltaY);
+
+                Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
+                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY) );
 
                 tmpPoint = this.model2window(tmpPoint);
 
-                System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
-                        + " deltaX:" + deltaX + " deltaY: "+ deltaY + " scale: " + scale );
+//              System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
+//                        + " deltaX:" + deltaX + " deltaY: "+ deltaY + " scale: " + scale + " startX: "
+//                        + startXSim + " startY: "+ startYSim);
                 g.draw(new Rectangle2D.Double(tmpPoint.getX(),tmpPoint.getY(), deltaX, deltaY ));
 
             }
@@ -240,6 +282,22 @@ public class Panel extends JPanel {
     }
 
             private void drawWaterSources(Graphics2D g){
+                WaterSourceUpdater[] wsu = Simulator.getWaterSources();
+
+                double tmpStartingX = this.startXSim;
+                double tmpStartingY = this.startYSim;
+
+
+                g.setColor(Color.BLACK);
+                for(int i = 0 ; i < wsu.length ; i++){
+                  int index = wsu[i].getIndex();
+
+                  Point2D pt = INFO[index].;
+
+                  g.drawString(wsu[i].getName(), );
+
+                }
+
 
 
 
@@ -254,6 +312,29 @@ public class Panel extends JPanel {
 
             }
 
+
+            private void setPoints() {
+
+
+                double tmpStartingX = this.startXSim;
+                double tmpStartingY = this.startYSim;
+
+                for (int i = 0; i < INFO.length; i++) {
+
+                    Cell tmp = INFO[i];
+
+                    if (tmp.isDry()) {
+                        g.setColor(new Color(100, 255, 100));
+
+                    } else {
+                        g.setColor(new Color(40, 20, 255));
+                    }
+
+                    Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
+                            , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY));
+                    POINTS[i] = tmpPoint;
+                }
+            }
 
 
 
