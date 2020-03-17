@@ -15,11 +15,6 @@ import java.awt.geom.Rectangle2D;
 public class Panel extends JPanel {
 
     /**
-     * Instance of the simulator
-     */
-    private Simulator sim;
-
-    /**
      * X-coordinate of the left corner of the "real-world"
      */
     private double startXSim;
@@ -135,9 +130,10 @@ public class Panel extends JPanel {
 
             this.POINTS = new Point2D[INFO.length];
 
-            setPoints();
 
-            computeModelDimensions();
+         computeModelDimensions();
+
+        setPoints();
 
         }
 
@@ -194,10 +190,6 @@ public class Panel extends JPanel {
 
 //        this.scale = Math.min(scaleX,
 //                scaleY);
-
-    /*    if(scale > 1){
-            this.scale = 1.0 / this.scale;
-        }*/
 
         if (scaleX < scaleY) {
             scale = scaleX;
@@ -263,15 +255,17 @@ public class Panel extends JPanel {
                     g.setColor(new Color(40,20,255));
                 }
 
-                Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
-                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY) );
+//                Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
+//                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY) );
+
+                Point2D tmpPoint = POINTS[i];
 
                 tmpPoint = this.model2window(tmpPoint);
 
 //              System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
 //                        + " deltaX:" + deltaX + " deltaY: "+ deltaY + " scale: " + scale + " startX: "
 //                        + startXSim + " startY: "+ startYSim);
-                g.draw(new Rectangle2D.Double(tmpPoint.getX(),tmpPoint.getY(), deltaX, deltaY ));
+                g.draw(new Rectangle2D.Double(tmpPoint.getX(),tmpPoint.getY(), deltaX * scale, deltaY * scale ));
 
             }
 
@@ -292,9 +286,9 @@ public class Panel extends JPanel {
                 for(int i = 0 ; i < wsu.length ; i++){
                   int index = wsu[i].getIndex();
 
-                  Point2D pt = INFO[index].;
+            //      Point2D pt = INFO[index].;
 
-                  g.drawString(wsu[i].getName(), );
+              //    g.drawString(wsu[i].getName(), );
 
                 }
 
@@ -315,29 +309,26 @@ public class Panel extends JPanel {
 
             private void setPoints() {
 
-
                 double tmpStartingX = this.startXSim;
                 double tmpStartingY = this.startYSim;
 
                 for (int i = 0; i < INFO.length; i++) {
 
-                    Cell tmp = INFO[i];
-
-                    if (tmp.isDry()) {
-                        g.setColor(new Color(100, 255, 100));
-
-                    } else {
-                        g.setColor(new Color(40, 20, 255));
-                    }
-
                     Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
                             , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY));
+
+//                    tmpPoint = this.model2window(tmpPoint);
+
                     POINTS[i] = tmpPoint;
+
+//              System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
+//                        + " deltaX:" + deltaX + " deltaY: "+ deltaY + " scale: " + scale + " startX: "
+//                        + startXSim + " startY: "+ startYSim);
+
                 }
+
+
             }
-
-
-
 
 
 
