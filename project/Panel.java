@@ -294,6 +294,12 @@ public class Panel extends JPanel {
     }
 
 
+    /**
+     * Prepares an array of water sources and the using the method drawWaterFlowLabel()
+     * draws it's direction together with name
+     *
+     * @param g graphical context
+     */
     private void drawWaterSources(Graphics2D g){
                 WaterSourceUpdater[] wsu = Simulator.getWaterSources();
 
@@ -304,27 +310,23 @@ public class Panel extends JPanel {
                 g.setColor(Color.BLACK);
                 for(int i = 0 ; i < wsu.length ; i++){
                   int index = wsu[i].getIndex();
-
                   Point2D tmp = POINTS[index];
-          //        tmp = model2window(tmp);
-
-//                    System.out.println(wsu[i].getName()+ " x" + tmp.getX() + " y: " + tmp.getY()  + " font: " + this.FONT_HEIGHT);
-
-
-
-            //      Point2D pt = INFO[index].;
-                    //    g.drawString(wsu[i].getName(), );
-
-                    this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
+                  this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
 
                 }
 
-
-
-                //TODO finish
     }
 
 
+    /**
+     * Calculates the angle depending on the cell gradient and writes the name of the water source and
+     * draws the direction its heading
+     *
+     * @param position position of the cell
+     * @param dirFlow gradient of the cell
+     * @param name name of the water source
+     * @param g graphical context
+     */
             private void drawWaterFlowLabel(Point2D position, Vector2D dirFlow, String name, Graphics2D g){
 
                 FontMetrics metrics = g.getFontMetrics(g.getFont());
@@ -335,9 +337,10 @@ public class Panel extends JPanel {
                 double x = Math.abs((double)dirFlow.x);
                 double y = Math.abs((double)dirFlow.y);
 
-
-                Point2D tmp = new Point2D.Double(position.getX() +x ,
-                        position.getY() + y );
+                //Vector created from points (0, heigthOfCanvas) and (widthOfCanvas, heightOfCanvas)
+                //Represents the vector aligned with axis x
+                double xVector = -this.widthOfCanvas;
+                double yVector = 0;
 
                 double theta = Math.acos((this.widthOfCanvas* x + 0 * y) /
                         ((Math.hypot(-this.widthOfCanvas, 0) * Math.hypot(x,y))
@@ -351,13 +354,12 @@ public class Panel extends JPanel {
                 g.rotate(theta);
 
                 g.setColor(Color.BLACK);
-                g.translate(- textWidth,0);
+                g.translate(-textWidth,0);
                 g.drawString(name, 0,0);
                 g.translate(textWidth, 0);
 
-                g.setColor(Color.GREEN);
 
-                if(!Double.isNaN(tmp.getX()) || !Double.isNaN(tmp.getY()))
+                if(!Double.isNaN(x) || !Double.isNaN(y))
                   drawArrow(new Point2D.Double(0,0), new Point2D.Double(-textWidth, 0), g);
 
                 g.rotate(-theta);
@@ -366,18 +368,15 @@ public class Panel extends JPanel {
 
 
 
-//                System.out.println("X: "+ tmp.getX() + " Y: " +tmp.getY());
-
-//                tmp = model2window(tmp);
-
-
 
             }
 
 
             private void drawArrow(Point2D start, Point2D end, Graphics2D g){
 
-                    double x1 = start.getX();
+                g.setColor(Color.DARK_GRAY);
+
+                double x1 = start.getX();
                     double y1 = start.getY();
 
                     double x2 = end.getX();
@@ -398,8 +397,8 @@ public class Panel extends JPanel {
                 double vNormY = vy / vLength;
 
                 // Vektor v protahneme na delku arrowLength
-                double vArrowX = vNormX;
-                double vArrowY = vNormY;
+                double vArrowX = vNormX * 4;
+                double vArrowY = vNormY * 4;
 
                 // Spocitame vektor kolmy k (vx, vy)
                 // Z nej pak odvodime koncove body carek tvoricich sipku.
@@ -407,8 +406,8 @@ public class Panel extends JPanel {
                 double ky = vArrowX;
 
                 // Upravime delku vektoru k, aby byla sipka hezci
-                kx *= 0.25 * vLength;
-                ky *= 0.25 * vLength;
+                kx *= 0.5;
+                ky *= 0.5;
 
                 g.setStroke(new BasicStroke(3));
                 // Cara od (x1, y1) k (x2, y2)
@@ -418,7 +417,6 @@ public class Panel extends JPanel {
                 g.draw(new Line2D.Double(x2, y2, x2 - vArrowX + kx, y2 - vArrowY + ky));
                 g.draw(new Line2D.Double(x2, y2, x2 - vArrowX - kx, y2 - vArrowY - ky));
 
-//TODO recalculate
             }
 
 
@@ -433,7 +431,7 @@ public class Panel extends JPanel {
                 for (int i = 0; i < INFO.length; i++) {
 
                     Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
-                            , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY));
+                            , tmpStartingY + ((i / AMMOUNT_OF_CELLS_HEIGHT)-1) * (this.deltaY));
 
 //                    tmpPoint = this.model2window(tmpPoint);
 
