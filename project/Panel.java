@@ -191,21 +191,22 @@ public class Panel extends JPanel {
         double scaleX = width/this.SIM_WIDTH;
         double scaleY = height/this.SIM_HEIGHT;
 
-        this.scale = Math.min(scaleX,
-                scaleY);
+//        this.scale = Math.min(scaleX,
+//                scaleY);
 //
-//        if (scaleX < scaleY) {
-//            scale = scaleX;
-//            OFFSET_X = 0;
-//            OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
-//
-//        } else {
-//            scale = scaleY;
-//            OFFSET_Y = 0;
-//            OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
-//        }
+        if (scaleX < scaleY) {
+            scale = scaleX;
+            OFFSET_X = 0;
+            OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
-        this.FONT_HEIGHT = (int)(0.05 * this.getHeight());
+        } else {
+            scale = scaleY;
+            OFFSET_Y = 0;
+            OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
+        }
+
+
+        this.FONT_HEIGHT = (int)(0.03 * this.getHeight());
 
 
 
@@ -258,13 +259,15 @@ public class Panel extends JPanel {
         double tmpStartingX = this.startXSim;
         double tmpStartingY = this.startYSim;
 
-        g.setColor(new Color(40,20,255));
+
 
         for(int i = 0 ; i < INFO.length ; i++){
 
                 Cell tmp = INFO[i];
 
-                if(tmp.isDry()){
+            g.setColor(new Color(40,20,255));
+
+            if(tmp.isDry()){
                  //   g.setColor(new Color(100,255,100));
                 continue;
                 }else{
@@ -301,16 +304,15 @@ public class Panel extends JPanel {
      * @param g graphical context
      */
     private void drawWaterSources(Graphics2D g){
+
                 WaterSourceUpdater[] wsu = Simulator.getWaterSources();
-
-                double tmpStartingX = this.startXSim;
-                double tmpStartingY = this.startYSim;
-
 
                 g.setColor(Color.BLACK);
                 for(int i = 0 ; i < wsu.length ; i++){
+//                    System.out.println("i: " + i);
                   int index = wsu[i].getIndex();
                   Point2D tmp = POINTS[index];
+
                   this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
 
                 }
@@ -329,52 +331,71 @@ public class Panel extends JPanel {
      */
             private void drawWaterFlowLabel(Point2D position, Vector2D dirFlow, String name, Graphics2D g){
 
-                FontMetrics metrics = g.getFontMetrics(g.getFont());
-                int textWidth = metrics.stringWidth(name);
+                double x = Math.abs((double)dirFlow.x);
+                double y = Math.abs((double)dirFlow.y);
+//                System.out.println( " Name: " + name );
+
+                if(!Double.isNaN(x) || !Double.isNaN(y)) {
 
                   position = model2window(position);
 
-                double x = Math.abs((double)dirFlow.x);
-                double y = Math.abs((double)dirFlow.y);
 
                 //Vector created from points (0, heigthOfCanvas) and (widthOfCanvas, heightOfCanvas)
                 //Represents the vector aligned with axis x
                 double xVector = -this.widthOfCanvas;
                 double yVector = 0;
 
-                double theta = Math.acos((this.widthOfCanvas* x + 0 * y) /
-                        ((Math.hypot(-this.widthOfCanvas, 0) * Math.hypot(x,y))
+                double theta = Math.acos((xVector* x + yVector * y) /
+                        ((Math.hypot(xVector, yVector) * Math.hypot(x,y))
                         ));
 
                 int xP =  (int)position.getX();
                 int yP = (int)position.getY();
 
-                g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
-                g.translate(xP,yP);
-                g.rotate(theta);
 
-                g.setColor(Color.BLACK);
-                g.translate(-textWidth,0);
-                g.drawString(name, 0,0);
-                g.translate(textWidth, 0);
+                    g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
 
+                    FontMetrics metrics = g.getFontMetrics(g.getFont());
+                    int textWidth = metrics.stringWidth(name);
+                    g.translate(xP,yP);
+                    g.rotate(theta);
 
-                if(!Double.isNaN(x) || !Double.isNaN(y))
-                  drawArrow(new Point2D.Double(0,0), new Point2D.Double(-textWidth, 0), g);
+                    g.setColor(Color.BLACK);
+//                    g.translate(-textWidth,0);
 
-                g.rotate(-theta);
-                g.translate(-xP ,-yP);
+                    g.scale(-1,-1);
 
+                    g.translate(0, -metrics.getDescent());
+                    g.drawString(name, 0,0);
+                    g.translate(0, metrics.getDescent());
 
+                    g.scale(-1,-1);
 
+//                    g.translate(textWidth, 0);
 
+                    drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
+
+                    g.rotate(-theta);
+                    g.translate(-xP ,-yP);
+
+                }else
+                    return;
 
             }
 
 
-            private void drawArrow(Point2D start, Point2D end, Graphics2D g){
+    /**
+     * Draws arrow from start to end
+     *
+     * @param start Starting point
+     * @param end ending points
+     * @param g graphics context
+     */
+    private void drawArrow(Point2D start, Point2D end, Graphics2D g){
 
-                g.setColor(Color.DARK_GRAY);
+        //Taken from exercise No.3
+
+                g.setColor(Color.RED);
 
                 double x1 = start.getX();
                     double y1 = start.getY();
@@ -424,23 +445,36 @@ public class Panel extends JPanel {
      * Calculates the points and saves them into an array
      */
     private void setPoints() {
+        double tmpStartingX = this.startXSim ;
+        double tmpStartingY = this.startYSim;
 
-                double tmpStartingX = this.startXSim;
-                double tmpStartingY = this.startYSim;
+//
+//                int counter = 0;
+//
+//
+//
+//                    for(int j = 0 ; j < this.AMMOUNT_OF_CELLS_HEIGHT ; j++){
+//                        double tmpStartingX = this.startXSim ;
+//                        double tmpStartingY = this.startYSim+ j * this.deltaX;
+//                        for(int i = 0 ; i < this.AMMOUNT_OF_CELLS_WIDTH ; i++){
+//
+//                            tmpStartingX += this.deltaX;
+//                        POINTS[counter++] = new Point2D.Double(tmpStartingX, tmpStartingY);
+//                    }
+//                }
+
+        System.out.println("INFO : " +INFO.length  + " CELLS: " + AMMOUNT_OF_CELLS_HEIGHT * AMMOUNT_OF_CELLS_WIDTH);
+        System.out.println("DeltaX : " +deltaX  + " deltaY : " + deltaY);
+
 
                 for (int i = 0; i < INFO.length; i++) {
 
-                    Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
-                            , tmpStartingY + ((i / AMMOUNT_OF_CELLS_HEIGHT)-1) * (this.deltaY));
+                    Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % (AMMOUNT_OF_CELLS_WIDTH))*deltaX
+                            , tmpStartingY + ((i / AMMOUNT_OF_CELLS_WIDTH))*deltaY );
 
 //                    tmpPoint = this.model2window(tmpPoint);
 
                     POINTS[i] = tmpPoint;
-
-//              System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
-//                        + " deltaX:" + deltaX + " deltaY: "+ deltaY + " scale: " + scale + " startX: "
-//                        + startXSim + " startY: "+ startYSim);
-
                 }
 
 
