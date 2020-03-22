@@ -102,6 +102,11 @@ public class Panel extends JPanel {
     private int FONT_HEIGHT;
 
     /**
+     * Variable representing whether the points are set or not
+     */
+    private boolean arePointsSet = false;
+
+    /**
      * Matrix representing cells of the simulation
      */
     private final Cell[][] cells;
@@ -140,8 +145,8 @@ public class Panel extends JPanel {
             this.cells = new Cell[AMMOUNT_OF_CELLS_WIDTH][AMMOUNT_OF_CELLS_HEIGHT];
 
             computeModelDimensions();
-
         setPoints();
+
 
         }
 
@@ -250,7 +255,7 @@ public class Panel extends JPanel {
      * @param g Graphic context
      */
     private void drawTerrain(Graphics2D g){
-        //Is supposed to be empty
+        //Is empty now
 
     }
 
@@ -262,42 +267,18 @@ public class Panel extends JPanel {
      */
     private void drawWaterLayer(Graphics2D g){
 
-
-        double tmpStartingX = this.startXSim;
-        double tmpStartingY = this.startYSim;
-
         g.setColor(new Color(40,100,255));
 
+            for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
-        for(int i = 0 ; i < AMMOUNT_OF_CELLS_WIDTH ; i++){
+                for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
 
-            for(int j = 0; j < AMMOUNT_OF_CELLS_HEIGHT ; j++){
+                    if (!cells[j][i].isDry()) {
+                        Point2D tmpPoint = model2window(POINTS[j][i]);
+                        g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(), deltaX * scale, deltaY * scale));
+                    }
 
-                Cell tmp = cells[i][j];
-
-
-            if(tmp.isDry()){
-                 //   g.setColor(new Color(100,255,100));
-                continue;
-                }else {
-                Point2D tmpPoint = POINTS[i][j];
-
-                tmpPoint = this.model2window(tmpPoint);
-
-                g.draw(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(), deltaX*scale , deltaY*scale ));
-
-
-//                System.out.println("X: " + tmpPoint.getX() + " Y:" + tmpPoint.getY()
-//                        + " deltaX:" + deltaX + " deltaY: " + deltaY + " scale: " + scale + " startX: "
-//                        + startXSim + " startY: " + startYSim);
                 }
-            }
-
-//                Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % AMMOUNT_OF_CELLS_WIDTH) * (this.deltaX)
-//                        , tmpStartingY + (i / AMMOUNT_OF_CELLS_HEIGHT) * (this.deltaY) );
-
-
-
             }
 
            this.drawWaterSources(g);
@@ -319,9 +300,11 @@ public class Panel extends JPanel {
                 for(int i = 0 ; i < wsu.length ; i++){
 //                    System.out.println("i: " + i);
                   int index = wsu[i].getIndex();
-//                  Point2D tmp = POINTS[index];
+                  int x = index % AMMOUNT_OF_CELLS_WIDTH;
+                  int y = index / AMMOUNT_OF_CELLS_WIDTH;
+                  Point2D tmp = POINTS[x][y];
 
-//                  this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
+                  this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
 
                 }
 
@@ -453,61 +436,32 @@ public class Panel extends JPanel {
      * Calculates the points and saves them into an array
      */
     private void setPoints() {
-
-//                for (int i = 0; i < INFO.length; i++) {
-//                        int indexX = (i % AMMOUNT_OF_CELLS_WIDTH);
-//                        int indexY = (i / AMMOUNT_OF_CELLS_WIDTH);
-//
-//                    double x = this.startXSim + ((indexX) * this.deltaX);
-//                    double y = this.startYSim + ((indexY) * this.deltaY);
-//
-//
-//                    Point2D tmpPoint = new Point2D.Double(x,y);
-//
-//                    if(tmpPoint.equals(endXSim)){
-//                        System.out.println("Bingo");
-//                    }
-//
-//
-////                    tmpPoint = this.model2window(tmpPoint);
-//
-//                    POINTS[i] = tmpPoint;
-//                }
-
-
         int counter = 0;
 
-
-//        Cell[][] cells = new Cell[AMMOUNT_OF_CELLS_WIDTH][AMMOUNT_OF_CELLS_HEIGHT];
-
-                for(int i = 0 ; i < AMMOUNT_OF_CELLS_HEIGHT ; i++){
-                    for(int j = 0 ; j < AMMOUNT_OF_CELLS_WIDTH; j++){
-
-                        this.cells[j][i] = INFO[counter++];
-            }
-
-        }
 
         double x = startXSim;
         double y = startYSim;
 
-        for(int j = 0 ; j < AMMOUNT_OF_CELLS_HEIGHT ; j++){
+        for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
-            for(int i = 0 ; i < AMMOUNT_OF_CELLS_WIDTH ; i++){
+            for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
 
-                POINTS[i][j] = new Point2D.Double(x,y);
+//                Point2D tmpPoint =
+             //   tmpPoint = this.model2window(tmpPoint);
+                POINTS[j][i] =  new Point2D.Double(x, y);
 
-                x+=deltaX;
+                this.cells[j][i] = INFO[counter++];
+
+                x += deltaX;
 
             }
             x = startXSim;
 
-            y+=deltaY;
-
+            y += deltaY;
         }
 
 
-            }
+    }
 
 
 
