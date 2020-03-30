@@ -28,12 +28,12 @@ public class Panel extends JPanel {
     /**
      * X-coordinate of the right corner of the "real-world"
      */
-    private double endXSim;
+    private double endX;
 
     /**
      * Y-coordinate of the right corner of the "real-world"
      */
-    private double endYSim;
+    private double endY;
 
     /**
      * Constant that defines width of the "real-world"
@@ -145,23 +145,29 @@ public class Panel extends JPanel {
             this.cells = new Cell[AMMOUNT_OF_CELLS_WIDTH][AMMOUNT_OF_CELLS_HEIGHT];
 
             computeModelDimensions();
-        setPoints();
+
+            setPoints();
 
 
         }
 
 
+    /**
+     * Method for drawing objects on the canvas
+     *
+     * @param g graphical context
+     */
     @Override
     public void paintComponent(Graphics g){
             super.paintComponent(g);
-//        System.out.println("Hello");
 
             Graphics2D g2 = (Graphics2D) g;
 
             computeModel2WindowTransformation(this.getWidth(), this.getHeight());
 
-            drawWaterFlowState(g2);
+            g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
 
+            drawWaterFlowState(g2);
 
     }
 
@@ -175,13 +181,9 @@ public class Panel extends JPanel {
             this.startXSim = start.x;
             this.startYSim = start.y;
 
-            this.endXSim = SIM_WIDTH + this.startXSim - deltaX;
-            this.endYSim = SIM_HEIGHT + this.startYSim - deltaY;
-
-        System.out.println("StartX: " + startXSim  + " startY: " + startYSim
-         + " endX: " + endXSim + " endY: " + endYSim
-        + " DeltaX: " + deltaX + " deltaY: " + deltaY);
-
+            this.endX = SIM_WIDTH + this.startXSim;
+            this.endY = SIM_HEIGHT + this.startYSim;
+            
     }
 
 
@@ -194,33 +196,19 @@ public class Panel extends JPanel {
      */
     private void computeModel2WindowTransformation(int width, int height){
 
-
-   //     System.out.println("Width: " +width + " Height: " + height );
-
         this.widthOfCanvas = width;
         this.heightOfCanvas = height;
 
         double scaleX = width/this.SIM_WIDTH;
         double scaleY = height/this.SIM_HEIGHT;
 
-//        this.scale = Math.min(scaleX,
-//                scaleY);
-//
-        if (scaleX < scaleY) {
-            scale = scaleX;
-            OFFSET_X = 0;
+            scale = Math.min(scaleX, scaleY);
+            OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
             OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
-        } else {
-            scale = scaleY;
-            OFFSET_Y = 0;
-            OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
-        }
 
 
-        this.FONT_HEIGHT = (int)(0.03 * this.getHeight());
-
-
+        this.FONT_HEIGHT = (int)(0.03 * height);
 
     }
 
@@ -239,12 +227,12 @@ public class Panel extends JPanel {
 
     /**
      * Method to call others methods to draw the state of the flow of the water
-     * @param g
+     * @param g graphical context
      */
     private void drawWaterFlowState(Graphics2D g){
 
         drawWaterLayer(g);
-        drawWaterSources(g);
+     //   drawWaterSources(g);
 
 
     }
@@ -275,7 +263,8 @@ public class Panel extends JPanel {
 
                     if (!cells[j][i].isDry()) {
                         Point2D tmpPoint = model2window(POINTS[j][i]);
-                        g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(), deltaX * scale, deltaY * scale));
+                        g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
+                                deltaX * scale, deltaY * scale));
                     }
 
                 }
@@ -298,7 +287,6 @@ public class Panel extends JPanel {
 
                 g.setColor(Color.BLACK);
                 for(int i = 0 ; i < wsu.length ; i++){
-//                    System.out.println("i: " + i);
                   int index = wsu[i].getIndex();
                   int x = index % AMMOUNT_OF_CELLS_WIDTH;
                   int y = index / AMMOUNT_OF_CELLS_WIDTH;
@@ -320,57 +308,65 @@ public class Panel extends JPanel {
      * @param name name of the water source
      * @param g graphical context
      */
-            private void drawWaterFlowLabel(Point2D position, Vector2D dirFlow, String name, Graphics2D g){
+            private void drawWaterFlowLabel(Point2D position, Vector2D<Double> dirFlow, String name, Graphics2D g){
 
-                double x = Math.abs((double)dirFlow.x);
-                double y = Math.abs((double)dirFlow.y);
-//                System.out.println( " Name: " + name );
+                double x =dirFlow.x;
+                double y =dirFlow.y;
 
-                if(!Double.isNaN(x) || !Double.isNaN(y)) {
+                int scaleX = 1;
+                int scaleY = 1;
+
+                if((!Double.isNaN(x) || !Double.isNaN(y) )) {
 
                   position = model2window(position);
-
 
                 //Vector created from points (0, heigthOfCanvas) and (widthOfCanvas, heightOfCanvas)
                 //Represents the vector aligned with axis x
                 double xVector = -this.widthOfCanvas;
                 double yVector = 0;
 
-                double theta = Math.acos((xVector* x + yVector * y) /
+
+                double theta = Math.acos(
+                        (xVector* x + yVector * y) /
                         ((Math.hypot(xVector, yVector) * Math.hypot(x,y))
                         ));
 
-                int xP =  (int)position.getX();
-                int yP = (int)position.getY();
-
-
-                    g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
+                    double xP = position.getX();
+                    double yP = position.getY();
 
                     FontMetrics metrics = g.getFontMetrics(g.getFont());
                     int textWidth = metrics.stringWidth(name);
+
                     g.translate(xP,yP);
-                    g.rotate(theta);
+                    g.rotate(-theta);
+
+                    drawArrow(new Point2D.Double(0, 0), new Point2D.Double(textWidth, 0), g);
 
                     g.setColor(Color.BLACK);
-//                    g.translate(-textWidth,0);
 
-                    g.scale(-1,-1);
+                    double degrees = Math.toDegrees(theta);
+                    if( (degrees > 90 && degrees < 180 ) || ( degrees > 270  && degrees < 360) ){ //Text would be upside
+                        g.scale(-1,-1);
+                        g.translate(-textWidth, -metrics.getDescent());  //To create a little offset between arrow and text
+                        g.drawString(name, 0,0);
+                        g.scale(-1,-1);
+                        g.translate(textWidth, metrics.getDescent());
 
-                    g.translate(0, -metrics.getDescent());
-                    g.drawString(name, 0,0);
-                    g.translate(0, metrics.getDescent());
+                    }else {
+                        g.translate(0, -metrics.getDescent());  //To create a little offset between arrow and text
 
-                    g.scale(-1,-1);
+                        g.drawString(name, 0, 0);
 
-//                    g.translate(textWidth, 0);
+                        g.translate(0, metrics.getDescent());
 
-                    drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
+                    }
 
-                    g.rotate(-theta);
+                    g.rotate(theta);
                     g.translate(-xP ,-yP);
 
-                }else
-                    return;
+//                    System.out.println(Math.toDegrees(theta) + " : PI+ "  + Math.toDegrees(theta + Math.PI));
+
+                }
 
             }
 
@@ -384,52 +380,49 @@ public class Panel extends JPanel {
      */
     private void drawArrow(Point2D start, Point2D end, Graphics2D g){
 
-        //Taken from exercise No.3
+        //Taken from exercise No.3 and edited with few tweaks
+
+        g.setStroke(new BasicStroke(3));
 
                 g.setColor(Color.RED);
 
                 double x1 = start.getX();
-                    double y1 = start.getY();
+                double y1 = start.getY();
 
-                    double x2 = end.getX();
-                    double y2 = end.getY();
+                double x2 = end.getX();
+                double y2 = end.getY();
 
 
                 // Spocitame slozky vektoru od (x1, y1) k (x2, y2)
                 double vx = x2 - x1;
                 double vy = y2 - y1;
 
-                // Spocitame vektoru v, tj usecky od (x1, y1) k (x2, y2).
-                // K vypoctu druhe mocniny idealne pouzivame nasobeni, ne funkci pow
-                // (je mnohem pomalejsi).
-                double vLength = Math.sqrt(vx*vx + vy*vy);
+                double length = Math.hypot(vx, vy);
 
-                // Z vektoru v udelame vektor jednotkove delky
-                double vNormX = vx / vLength;
-                double vNormY = vy / vLength;
+                double unitVx = vx / length;
+                double unitVy = vy / length;
 
-                // Vektor v protahneme na delku arrowLength
-                double vArrowX = vNormX * 4;
-                double vArrowY = vNormY * 4;
+                //Normal to the vector v
+                double normUnitX = -vy;
+                double normUnitY = vx;
 
-                // Spocitame vektor kolmy k (vx, vy)
-                // Z nej pak odvodime koncove body carek tvoricich sipku.
-                double kx = -vArrowY;
-                double ky = vArrowX;
+                g.draw(new Line2D.Double(x1,y1,x2,y2));
 
-                // Upravime delku vektoru k, aby byla sipka hezci
-                kx *= 0.5;
-                ky *= 0.5;
+                final double DISTANCE_FROM_END = 0.1 * length;
+                final double LENGTH_OF_ARROWHEAD = 0.1;
 
-                g.setStroke(new BasicStroke(3));
-                // Cara od (x1, y1) k (x2, y2)
-                g.draw(new Line2D.Double(x1, y1, x2, y2));
+                double pointFromEndX = x2 - unitVx * DISTANCE_FROM_END;
+                double pointFromEndY = y2 - unitVy * DISTANCE_FROM_END;
 
-                // Sipka na konci
-                g.draw(new Line2D.Double(x2, y2, x2 - vArrowX + kx, y2 - vArrowY + ky));
-                g.draw(new Line2D.Double(x2, y2, x2 - vArrowX - kx, y2 - vArrowY - ky));
+                g.draw(new Line2D.Double(x2,y2,
+                        pointFromEndX + normUnitX * LENGTH_OF_ARROWHEAD,
+                        pointFromEndY + normUnitY * LENGTH_OF_ARROWHEAD));
+                g.draw(new Line2D.Double(x2,y2,
+                        pointFromEndX - normUnitX * LENGTH_OF_ARROWHEAD,
+                        pointFromEndY - normUnitY * LENGTH_OF_ARROWHEAD));
 
-            }
+
+    }
 
 
     /**
@@ -446,8 +439,6 @@ public class Panel extends JPanel {
 
             for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
 
-//                Point2D tmpPoint =
-             //   tmpPoint = this.model2window(tmpPoint);
                 POINTS[j][i] =  new Point2D.Double(x, y);
 
                 this.cells[j][i] = INFO[counter++];

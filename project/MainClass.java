@@ -27,25 +27,15 @@ public class MainClass {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-//        java.util.Timer myTime = new Timer();
-//        myTime.scheduleAtFixedRate(new TimerTask() {
-//
-//            @Override
-//            public void run() {
-//                Simulator.nextStep(.1);
-//                p.repaint();
-//
-//            }
-//        }, 0, 100);
         Timer timer;
-        int timerPeriod = 1000 / 60; // Prekreslit okno 25krat za 1000 milisekund
+        int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
         long startTime = System.currentTimeMillis();
         timer = new Timer(timerPeriod, new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
 //                drawingPanel.setTime((System.currentTimeMillis() - startTime) / 1000.0);
-                Simulator.nextStep(.1);
+                Simulator.nextStep(0.1);
                 p.repaint();
             }
         });
