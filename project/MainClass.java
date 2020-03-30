@@ -25,7 +25,7 @@ public class MainClass {
         int length = Simulator.getScenarios().length;
 
         if(sim < 0 || sim >= length){
-            System.out.println("Je nutne zadat parametr v rozsahu <0, " + length + " >" );
+            System.out.println("Je nutne zadat parametr v rozsahu <0, " + length + ")" );
             System.exit(0);
         }
 
