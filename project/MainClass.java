@@ -14,8 +14,18 @@ public class MainClass {
         int sim;
         if(args.length == 0){
             sim = 0;
-        }else{
-            sim = Integer.parseInt(args[0]);
+        }else {
+            try {
+                sim = Integer.parseInt(args[0]);
+            }catch{
+                System.out.println("Je nutne zadat kladny celociselny parametr!");
+            }
+        }
+        int length = Simulator.getScenarios().length;
+
+        if(sim < 0 || sim >= length){
+            System.out.println("Je nutne zadat parametr v rozsahu <0, " + length + " >" );
+            System.exit(0);
         }
 
         JFrame frame = new JFrame("A18B0307P");
