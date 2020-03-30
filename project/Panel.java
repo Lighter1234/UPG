@@ -313,23 +313,26 @@ public class Panel extends JPanel {
                 double x =dirFlow.x;
                 double y =dirFlow.y;
 
-                int scaleX = 1;
-                int scaleY = 1;
-
                 if((!Double.isNaN(x) || !Double.isNaN(y) )) {
 
                   position = model2window(position);
 
                 //Vector created from points (0, heigthOfCanvas) and (widthOfCanvas, heightOfCanvas)
                 //Represents the vector aligned with axis x
-                double xVector = -this.widthOfCanvas;
+                double xVector = this.widthOfCanvas;
                 double yVector = 0;
 
 
                 double theta = Math.acos(
                         (xVector* x + yVector * y) /
                         ((Math.hypot(xVector, yVector) * Math.hypot(x,y))
-                        ));
+                        )) ;
+
+
+                if(dirFlow.y < 0 ){
+                    theta *= -1;
+                }
+//                    double theta = Math.atan(y/x);
 
                     double xP = position.getX();
                     double yP = position.getY();
@@ -338,34 +341,41 @@ public class Panel extends JPanel {
                     int textWidth = metrics.stringWidth(name);
 
                     g.translate(xP,yP);
-                    g.rotate(-theta);
+                    g.rotate(theta);
 
-                    drawArrow(new Point2D.Double(0, 0), new Point2D.Double(textWidth, 0), g);
+                    drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
 
                     g.setColor(Color.BLACK);
 
-                    double degrees = Math.toDegrees(theta);
-                    if( (degrees > 90 && degrees < 180 ) || ( degrees > 270  && degrees < 360) ){ //Text would be upside
-                        g.scale(-1,-1);
-                        g.translate(-textWidth, -metrics.getDescent());  //To create a little offset between arrow and text
-                        g.drawString(name, 0,0);
-                        g.scale(-1,-1);
-                        g.translate(textWidth, metrics.getDescent());
 
-                    }else {
+//                    g.translate(0, -metrics.getDescent());  //To create a little offset between arrow and text
+//
+//                    g.drawString(name, 0, 0);
+//
+//                    g.translate(0, metrics.getDescent());
+
+                    double degrees = Math.abs(Math.toDegrees(theta));
+
+                    if( ( degrees > 90 && degrees < 180 ) || ( degrees > 270  && degrees < 360)){
+                        g.scale(-1, -1);
                         g.translate(0, -metrics.getDescent());  //To create a little offset between arrow and text
+                        g.drawString(name, 0, 0);
+                        g.translate(0, metrics.getDescent());
+
+                        g.scale(-1, -1);
+                    }else{
+                        g.translate(-textWidth, -metrics.getDescent());  //To create a little offset between arrow and text
 
                         g.drawString(name, 0, 0);
 
-                        g.translate(0, metrics.getDescent());
-
+                        g.translate(textWidth, metrics.getDescent());
                     }
 
-                    g.rotate(theta);
+                    g.rotate(-theta);
                     g.translate(-xP ,-yP);
 
-//                    System.out.println(Math.toDegrees(theta) + " : PI+ "  + Math.toDegrees(theta + Math.PI));
-
+//                    System.out.println(Math.toDegrees(theta) + " : PI+ "  +  Math.toRadians(theta));
+//                    System.out.println(dirFlow.x + "x  " + "  y "+  y);
                 }
 
             }
