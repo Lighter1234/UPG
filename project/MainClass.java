@@ -11,14 +11,15 @@ import java.awt.*;
 public class MainClass {
 
     public static void main(String[] args){
-        int sim;
+        int sim = 0;
         if(args.length == 0){
             sim = 0;
         }else {
             try {
                 sim = Integer.parseInt(args[0]);
-            }catch{
+            }catch(Exception e){
                 System.out.println("Je nutne zadat kladny celociselny parametr!");
+                System.exit(0);
             }
         }
         int length = Simulator.getScenarios().length;
