@@ -348,12 +348,6 @@ public class Panel extends JPanel {
                     g.setColor(Color.BLACK);
 
 
-//                    g.translate(0, -metrics.getDescent());  //To create a little offset between arrow and text
-//
-//                    g.drawString(name, 0, 0);
-//
-//                    g.translate(0, metrics.getDescent());
-
                     double degrees = Math.abs(Math.toDegrees(theta));
 
                     if( ( degrees > 90 && degrees < 180 ) || ( degrees > 270  && degrees < 360)){
@@ -374,8 +368,6 @@ public class Panel extends JPanel {
                     g.rotate(-theta);
                     g.translate(-xP ,-yP);
 
-//                    System.out.println(Math.toDegrees(theta) + " : PI+ "  +  Math.toRadians(theta));
-//                    System.out.println(dirFlow.x + "x  " + "  y "+  y);
                 }
 
             }

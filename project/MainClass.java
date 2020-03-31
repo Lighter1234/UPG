@@ -45,7 +45,6 @@ public class MainClass {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-//                drawingPanel.setTime((System.currentTimeMillis() - startTime) / 1000.0);
                 Simulator.nextStep(0.1);
                 p.repaint();
             }
