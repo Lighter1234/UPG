@@ -17,7 +17,7 @@ public class MainClass {
     public static void main(String[] args){
         int sim = 0;
         if(args.length == 0){
-            sim = 3;
+            sim = 0;
         }else {
             try {
                 sim = Integer.parseInt(args[0]);
@@ -33,7 +33,7 @@ public class MainClass {
             System.exit(0);
         }
 
-
+        GUI gui = new GUI(sim);
 
 
     }

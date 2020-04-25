@@ -118,7 +118,7 @@ public class Panel extends JPanel {
      * @param scenario Number of scenario
      */
     public Panel(int scenario){
-        this.setPreferredSize(new Dimension(600,800));
+        this.setPreferredSize(new Dimension(600,480));
             Simulator.runScenario(scenario);
 
             this.INFO = Simulator.getData();
@@ -144,7 +144,6 @@ public class Panel extends JPanel {
 
             setPoints();
 
-        System.out.println(this.deltaX);
 
         }
 
@@ -203,8 +202,6 @@ public class Panel extends JPanel {
             OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
             OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
-
-        System.out.println(this.scale);
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 

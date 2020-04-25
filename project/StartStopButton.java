@@ -32,7 +32,7 @@ public class StartStopButton extends JButton implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         this.simulationRunning = !this.simulationRunning;
-        this.setName(BUTTON_NAMES[this.simulationRunning ? 0 : 1]);
+        this.setText(BUTTON_NAMES[this.simulationRunning ? 0 : 1]);
     }
 
     /**
