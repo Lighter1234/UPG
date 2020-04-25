@@ -7,13 +7,17 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.*;
 
-
+/**
+ * Class to start the program
+ *
+ * @author Josef Yassin Saleh
+ */
 public class MainClass {
 
     public static void main(String[] args){
         int sim = 0;
         if(args.length == 0){
-            sim = 0;
+            sim = 3;
         }else {
             try {
                 sim = Integer.parseInt(args[0]);

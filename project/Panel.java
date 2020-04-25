@@ -101,10 +101,6 @@ public class Panel extends JPanel {
      */
     private int FONT_HEIGHT;
 
-    /**
-     * Variable representing whether the points are set or not
-     */
-    private boolean arePointsSet = false;
 
     /**
      * Matrix representing cells of the simulation
@@ -122,7 +118,7 @@ public class Panel extends JPanel {
      * @param scenario Number of scenario
      */
     public Panel(int scenario){
-        this.setPreferredSize(new Dimension(800,600));
+        this.setPreferredSize(new Dimension(600,800));
             Simulator.runScenario(scenario);
 
             this.INFO = Simulator.getData();
@@ -148,6 +144,7 @@ public class Panel extends JPanel {
 
             setPoints();
 
+        System.out.println(this.deltaX);
 
         }
 
@@ -183,7 +180,7 @@ public class Panel extends JPanel {
 
             this.endX = SIM_WIDTH + this.startXSim;
             this.endY = SIM_HEIGHT + this.startYSim;
-            
+
     }
 
 
@@ -207,6 +204,7 @@ public class Panel extends JPanel {
             OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
 
+        System.out.println(this.scale);
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 
