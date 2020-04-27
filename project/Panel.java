@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 
 /**
  * Class for drawing of the simulation on the canvas
@@ -127,6 +128,16 @@ public class Panel extends JPanel {
     private final double RIGHT_EDGE_OFFSET = 0.9;      // 7/8
 
     /**
+     * Data stored about simulation
+     */
+    private ArrayList<Data> data = new ArrayList<>();
+
+    /**
+     * Counter for seconds of the simulation
+     */
+    private int counterOfSeconds = 0;
+
+    /**
      * Constructor to create a canvas for modeling water flow
      *
      * @param scenario Number of scenario
@@ -212,10 +223,9 @@ public class Panel extends JPanel {
         double scaleX = width/this.SIM_WIDTH;
         double scaleY = height/this.SIM_HEIGHT;
 
-            scale = Math.min(scaleX, scaleY);
-            OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
-            OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
-
+        scale = Math.min(scaleX, scaleY);
+        OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
+        OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 
@@ -262,7 +272,6 @@ public class Panel extends JPanel {
      * @param g Graphical context
      */
     private void drawWaterLayer(Graphics2D g){
-
 
             for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
@@ -358,7 +367,6 @@ public class Panel extends JPanel {
                 if(dirFlow.y < 0 ){
                     theta *= -1;
                 }
-//                    double theta = Math.atan(y/x);
 
                     double xP = position.getX();
                     double yP = position.getY();
@@ -479,10 +487,15 @@ public class Panel extends JPanel {
             y += deltaY;
         }
 
-
     }
 
-
-
-
+    /**
+     * Method to refresh data about simulation each second of the simulation
+     */
+    public void refresh() {
+        for(int i = 0 ; i < INFO.length ; i++){
+            data.add(new Data(INFO[i].getWaterLevel(), counterOfSeconds));
+        }
+        counterOfSeconds++;
+    }
 }

@@ -13,6 +13,8 @@ public class GUI {
 
     private JFrame frame;
 
+    public static double counter = 0.0;
+
 
     private int sim;
     public GUI(int sim){
@@ -58,10 +60,18 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(stBut.isSimulationRunning()){
-                    double step = 0.1 * ms.getSimulationSpeed();
-              //      System.out.println(step);
+
+                    double step = Math.round(0.1 * ms.getSimulationSpeed()*100)/100.0;
                     Simulator.nextStep(step);
+                    counter += step;
+
+                    if(counter >= 1) {
+                        System.out.println(counter);
+                        p.refresh();
+                        counter = 0.0;
+                    }
                     p.repaint();
+
                 }
             }
         });
