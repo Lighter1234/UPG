@@ -11,8 +11,6 @@ public class GUI {
 
     private Panel p;
 
-    private static boolean simulationRunning = true;
-
     private JFrame frame;
 
 
@@ -36,7 +34,10 @@ public class GUI {
 
         JPanel GUIPanel = new JPanel();
 
-
+        //SpeedSlider
+        MySlider ms = new MySlider();
+        ms.addChangeListener(ms);
+        GUIPanel.add(ms);
 
         //Start/Stop button
         StartStopButton stBut = new StartStopButton();
@@ -51,13 +52,15 @@ public class GUI {
 
         /////////////////////////Simulation/////////////////////////
         Timer timer;
-        int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
+        int timerPeriod = 1000 / 25  ; // Prekreslit okno 25krat za 1000 milisekund
         timer = new Timer(timerPeriod, new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(stBut.isSimulationRunning()){
-                    Simulator.nextStep(0.1);
+                    double step = 0.1 * ms.getSimulationSpeed();
+              //      System.out.println(step);
+                    Simulator.nextStep(step);
                     p.repaint();
                 }
             }
@@ -67,17 +70,6 @@ public class GUI {
 
     }
 
-
-    private void makeStopButton() {
-        JButton stopB = new JButton("Stop");
-        stopB.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-            }
-        });
-
-    }
 
 
 }

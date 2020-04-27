@@ -95,7 +95,6 @@ public class Panel extends JPanel {
      */
     private final Cell[] INFO;
 
-
     /**
      * Variable representing height of the text
      */
@@ -111,6 +110,21 @@ public class Panel extends JPanel {
      * Array of points so there's no need for recalculating them again
      */
     private final Point2D[][] POINTS;
+
+    /**
+     * Constant to create offset for arrows on the edge
+     */
+    private final int ARROW_OFFSET = 10;
+
+    /**
+     * Constant representing left edge for both X axises
+     */
+    private final int LEFT_EDGE_OFFSET = 10;
+
+    /**
+     * Constant representing right edge for both X axises
+     */
+    private final double RIGHT_EDGE_OFFSET = 0.9;      // 7/8
 
     /**
      * Constructor to create a canvas for modeling water flow
@@ -227,7 +241,6 @@ public class Panel extends JPanel {
     private void drawWaterFlowState(Graphics2D g){
 
         drawWaterLayer(g);
-     //   drawWaterSources(g);
 
 
     }
@@ -238,7 +251,7 @@ public class Panel extends JPanel {
      * @param g Graphic context
      */
     private void drawTerrain(Graphics2D g){
-        //Is empty now
+
 
     }
 
@@ -250,17 +263,20 @@ public class Panel extends JPanel {
      */
     private void drawWaterLayer(Graphics2D g){
 
-        g.setColor(new Color(40,100,255));
 
             for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
                 for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
+                    Point2D tmpPoint = model2window(POINTS[j][i]);
 
                     if (!cells[j][i].isDry()) {
-                        Point2D tmpPoint = model2window(POINTS[j][i]);
-                        g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
-                                deltaX * scale, deltaY * scale));
+                        g.setColor(new Color(40,100,255));
+
+                    }else{
+                        g.setColor(new Color(40, (int)cells[j][i].getTerrainLevel(), 40));
                     }
+                    g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
+                            deltaX * scale, deltaY * scale));
 
                 }
             }
@@ -285,7 +301,22 @@ public class Panel extends JPanel {
                   int index = wsu[i].getIndex();
                   int x = index % AMMOUNT_OF_CELLS_WIDTH;
                   int y = index / AMMOUNT_OF_CELLS_WIDTH;
-                  Point2D tmp = POINTS[x][y];
+
+                  //to create an offset for arrow that is on the edge
+                  if(x < AMMOUNT_OF_CELLS_WIDTH/LEFT_EDGE_OFFSET){
+                      x += AMMOUNT_OF_CELLS_WIDTH/ARROW_OFFSET;
+                  }else if(x >= (AMMOUNT_OF_CELLS_WIDTH * RIGHT_EDGE_OFFSET)){
+                      x -= AMMOUNT_OF_CELLS_WIDTH/ARROW_OFFSET;
+                  }
+                    if(y < AMMOUNT_OF_CELLS_HEIGHT/LEFT_EDGE_OFFSET){
+                      y+= AMMOUNT_OF_CELLS_HEIGHT/ARROW_OFFSET;
+                  }else if(y >= (AMMOUNT_OF_CELLS_HEIGHT * RIGHT_EDGE_OFFSET)){
+                      y-= AMMOUNT_OF_CELLS_HEIGHT/ARROW_OFFSET;
+                  }
+
+                    Point2D tmp = POINTS[x][y];
+
+
 
                   this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
 
