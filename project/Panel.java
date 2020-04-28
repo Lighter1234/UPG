@@ -138,6 +138,27 @@ public class Panel extends JPanel {
     private int counterOfSeconds = 0;
 
     /**
+     * Constant to zoom
+     */
+    private final double ZOOM_IN_CONSTANT = 1.1;
+
+    /**
+     * Constant to zoom out
+     */
+    private final double ZOOM_OUT_CONSTANT = 0.9;
+
+    /**
+     * Variable to represent zoom in/out
+     */
+    private double zoom = 1;
+
+    /**
+     * Array of cell areas
+     */
+    private Rectangle2D[][] areas;
+
+
+    /**
      * Constructor to create a canvas for modeling water flow
      *
      * @param scenario Number of scenario
@@ -164,11 +185,11 @@ public class Panel extends JPanel {
 
             this.POINTS = new Point2D[AMMOUNT_OF_CELLS_WIDTH][AMMOUNT_OF_CELLS_HEIGHT];
             this.cells = new Cell[AMMOUNT_OF_CELLS_WIDTH][AMMOUNT_OF_CELLS_HEIGHT];
+            this.areas = new Rectangle2D[AMMOUNT_OF_CELLS_WIDTH][AMMOUNT_OF_CELLS_HEIGHT];
 
             computeModelDimensions();
 
             setPoints();
-
 
         }
 
@@ -224,12 +245,17 @@ public class Panel extends JPanel {
         double scaleY = height/this.SIM_HEIGHT;
 
         scale = Math.min(scaleX, scaleY);
+
         OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
         OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 
+        setAreas();
+
     }
+
+
 
 
     /**
@@ -239,8 +265,8 @@ public class Panel extends JPanel {
      * @return remodeled Point2D into canvas
      */
     private Point2D model2window(Point2D m){
-        return new Point2D.Double(((m.getX()-startXSim) * this.scale) + OFFSET_X,
-                (((m.getY() - startYSim) * this.scale))+ OFFSET_Y) ;
+        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X,
+                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y) ;
     }
 
 
@@ -261,7 +287,7 @@ public class Panel extends JPanel {
      * @param g Graphic context
      */
     private void drawTerrain(Graphics2D g){
-
+    //Empty
 
     }
 
@@ -276,7 +302,7 @@ public class Panel extends JPanel {
             for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
                 for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
-                    Point2D tmpPoint = model2window(POINTS[j][i]);
+//                    Point2D tmpPoint = model2window(POINTS[j][i]);
 
                     if (!cells[j][i].isDry()) {
                         g.setColor(new Color(40,100,255));
@@ -284,9 +310,9 @@ public class Panel extends JPanel {
                     }else{
                         g.setColor(new Color(40, (int)cells[j][i].getTerrainLevel(), 40));
                     }
-                    g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
-                            deltaX * scale, deltaY * scale));
-
+//                    g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
+//                            deltaX * scale, deltaY * scale));
+                    g.fill(areas[j][i]);
                 }
             }
 
@@ -324,8 +350,6 @@ public class Panel extends JPanel {
                   }
 
                     Point2D tmp = POINTS[x][y];
-
-
 
                   this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
 
@@ -457,7 +481,6 @@ public class Panel extends JPanel {
                         pointFromEndX - normUnitX * LENGTH_OF_ARROWHEAD,
                         pointFromEndY - normUnitY * LENGTH_OF_ARROWHEAD));
 
-
     }
 
 
@@ -497,5 +520,129 @@ public class Panel extends JPanel {
             data.add(new Data(INFO[i].getWaterLevel(), counterOfSeconds));
         }
         counterOfSeconds++;
+    }
+
+    /**
+     * Method is to increase the scale for zoom
+     */
+    public void zoom(){
+        zoom *= ZOOM_IN_CONSTANT;
+    }
+
+    /**
+     * Method to decrease the scale for zoom
+     */
+    public void zoomOut(){
+        zoom *= ZOOM_OUT_CONSTANT;
+    }
+
+    /**
+     * Method to reset the zoom
+     */
+    public void resetZoom(){
+        zoom = 1;
+    }
+
+    /**
+     * Sets the areas to know where the cells are located
+     */
+    private void setAreas() {
+        for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
+
+            for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
+                Point2D tmpPoint = model2window(POINTS[j][i]);
+
+                areas[j][i] = new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
+                        deltaX * scale, deltaY * scale);
+
+            }
+        }
+    }
+
+
+    /**
+     * After selecting an area, this method goes through each point and checks if it is in the area
+     *
+     * @param r selected area
+     * @return array of indexes in INFO array or null in case no points were found
+     */
+    public int[] findCells(Rectangle2D r){
+        ArrayList<Integer> indexes = new ArrayList<>();
+
+        int counter = 0;
+        for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
+
+            for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
+
+                if(r.contains(model2window(this.POINTS[j][i]))){
+                    indexes.add(counter);
+                }
+
+                counter++;
+            }
+        }
+        if(indexes.isEmpty()) return null;
+
+        int[] temp = new int[indexes.size()];
+
+        for(int i = 0  ; i < indexes.size(); i++){
+            temp[i] = indexes.get(i);
+        }
+
+
+        return temp;
+    }
+
+    /**
+     * Upon clicking checks all the areas to know which cell was clicked
+     *
+     * @param p mouseclick
+     * @return index in the INFO array or null if nothing was found
+     */
+    public int[] findCells(Point2D p){
+
+        int counter = 0 ;
+        for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
+
+            for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
+                Rectangle2D tempRect = areas[j][i];
+                if(tempRect.contains(p)){
+                    return new int[]{counter};
+                }
+
+                counter++;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns data for graph
+     *
+     * @return graph data
+     */
+    public ArrayList<Data> getData(){
+        return this.data;
+    }
+
+    private double xRect;
+
+    private double yRect;
+
+    public void startPoint(double x, double y) {
+        xRect = x;
+        yRect = y;
+    }
+
+    public void drawChoosingRectangle(double x, double y){
+        Graphics2D g = (Graphics2D)(this.getGraphics());
+        g.draw(new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect)));
+
+    }
+
+    public int[] getSelectedPoints(double x, double y) {
+        Rectangle2D r = new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect));
+        return findCells(r);
     }
 }

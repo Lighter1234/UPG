@@ -34,6 +34,7 @@ public class MainClass {
         }
 
         GUI gui = new GUI(sim);
+        gui.startSimulation();
 
 
     }
