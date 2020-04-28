@@ -9,14 +9,29 @@ import java.awt.event.*;
 
 public class MyMouseListener implements MouseListener, MouseMotionListener, MouseWheelListener, WindowListener {
 
+    /**
+     * Instance of active panel
+     */
     private Panel p;
 
+    /**
+     * Instace of timer to repaint the graph
+     */
     private Timer t;
 
+    /**
+     * Instance of chartpanel to put the graph in
+     */
     private ChartPanel chp;
 
+    /**
+     * Instance of graph
+     */
     private GraphHandler graph;
 
+    /**
+     * New window to show graph in
+     */
     private JFrame frame;
 
     private boolean graphActive = false;
@@ -28,6 +43,12 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
         this.p.addMouseWheelListener(this);
     }
 
+    /**
+     * Reaction on mouseclick from user,
+     * Creates a graph
+     *
+     * @param e click from user
+     */
     @Override
     public void mouseClicked(MouseEvent e) {
         int[] point = p.findCells(e.getPoint());
@@ -65,11 +86,23 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     }
 
+    /**
+     * Reaction when user presses the mouse button
+     * Prepares first point
+     *
+     * @param e mouse click
+     */
     @Override
     public void mousePressed(MouseEvent e) {
         p.startPoint(e.getX(), e.getY());
     }
 
+    /**
+     * Reaction when user lets go of the mouse button
+     * Creates a graph
+     *
+     * @param e mouse release
+     */
     @Override
     public void mouseReleased(MouseEvent e) {
         int[] selectedPoints = p.getSelectedPoints(e.getX(), e.getY());
@@ -119,6 +152,12 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     }
 
+    /**
+     * Reaction when user is holding the button and goes around the panel
+     * Creates a rectangle on the panel
+     *
+     * @param e movement with mouse
+     */
     @Override
     public void mouseDragged(MouseEvent e) {
         p.drawChoosingRectangle(e.getX(), e.getY());
@@ -129,6 +168,12 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     }
 
+    /**
+     * Reaction when user scrolls with mouse wheel
+     * Zooms in or out depending on the scroll
+     *
+     * @param e mouse wheel scroll
+     */
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         int rot = e.getWheelRotation();
@@ -147,6 +192,11 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     }
 
+    /**
+     * Reaction when user closes the panel with graph
+     *
+     * @param e panel closing
+     */
     @Override
     public void windowClosing(WindowEvent e) {
         frame.dispose();

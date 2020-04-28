@@ -3,13 +3,17 @@ package project;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import waterflowsim.Simulator;
 
 import java.util.ArrayList;
 
 public class GraphHandler{
 
-    private DefaultXYDataset dataset;
+    private XYSeriesCollection dataset;
+
+    private XYSeries data;
 
     private ArrayList<Data> graphData;
 
@@ -29,7 +33,9 @@ public class GraphHandler{
      * @return graph of data
      */
     public JFreeChart createXYChart(){
-        dataset = new DefaultXYDataset();
+        dataset = new XYSeriesCollection();
+        data = new XYSeries("A");
+        dataset.addSeries(data);
 
         refreshGraph();
 
@@ -44,27 +50,39 @@ public class GraphHandler{
     public void refreshGraph(){
 
         if(index.length == 1) {
+          //  System.out.println(index[0]);
             for (int i = index[0]; i < graphData.size(); i += NEXT) {
                 Data tempData = graphData.get(i);
-                double[][] temp = new double[][]{{tempData.getSec()}, {tempData.getWaterHeight()}};
-                dataset.addSeries(0, temp);
+            //    double[][] temp = new double[][]{{tempData.getSec()}, {tempData.getWaterHeight()}};
+                data.addOrUpdate(tempData.getSec(), tempData.getWaterHeight());
                 index[0] = i + NEXT;
+
             }
         }
         else{
-            int counter = 0;
-            for(int i = index[counter] ; i < graphData.size() ; i += NEXT){
-                int sec = graphData.get(i).getSec();
-                double tempHeight = graphData.get(index[i]).getWaterHeight();
+//            System.out.println(index.length);
+//            int counter = 0;
+            for(int i = index[0] ; i < graphData.size() ;  i += NEXT ){
+                Data tmpData = graphData.get(i);
 
-                for(int j = 1 ; j < index.length ; j++){
+                int sec = tmpData.getSec();
+
+                double tempHeight = 0.0; // tmpData.getWaterHeight();
+
+                for(int j = 0 ; j <  index.length ; j++ ){
                     tempHeight += graphData.get(index[j]).getWaterHeight();
+                    index[j] = index[j] + NEXT; // Creates a structure that helps with adding new element
+                    // without having to create the graph from the scratch
                 }
-                index[counter++] = i + NEXT; // Creates a structure that helps with adding new element
-                // without having to create the graph from the scratch
 
-                double[][] temp = new double[][]{{sec},{tempHeight}};
-                dataset.addSeries(0,temp);
+//                double[][] temp = new double[][]{{sec},{tempHeight}};
+//                System.out.println(sec);
+
+//                System.out.println(tempHeight);
+
+                tempHeight /= (double)index.length;
+
+                data.addOrUpdate(sec, tempHeight);
 
             }
         }

@@ -157,6 +157,16 @@ public class Panel extends JPanel {
      */
     private Rectangle2D[][] areas;
 
+    /**
+     * Start position of mouse drag x-axis
+     */
+    private double xRect;
+
+    /**
+     * Start position of mouse drag on y-axis
+     */
+    private double yRect;
+
 
     /**
      * Constructor to create a canvas for modeling water flow
@@ -626,21 +636,36 @@ public class Panel extends JPanel {
         return this.data;
     }
 
-    private double xRect;
-
-    private double yRect;
-
+    /**
+     * When user clicks remember position where they clicked
+     *
+     * @param x position of mouse on x axis
+     * @param y position of mouse on y axis
+     */
     public void startPoint(double x, double y) {
         xRect = x;
         yRect = y;
     }
 
+    /**
+     * Draws rectangle on the panel so user knows what cells is he choosing
+     *
+     * @param x position of mouse on x axis
+     * @param y position of mouse on y axis
+     */
     public void drawChoosingRectangle(double x, double y){
         Graphics2D g = (Graphics2D)(this.getGraphics());
         g.draw(new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect)));
 
     }
 
+    /**
+     * Creates a rectangle that was drawn and returns all cells in the drawn rectangle
+     *
+     * @param x position of mouse on x axis
+     * @param y position of mouse on y axis
+     * @return array of indexes
+     */
     public int[] getSelectedPoints(double x, double y) {
         Rectangle2D r = new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect));
         return findCells(r);
