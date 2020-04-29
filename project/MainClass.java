@@ -26,6 +26,7 @@ public class MainClass {
                 System.exit(0);
             }
         }
+
         int length = Simulator.getScenarios().length;
 
         if(sim < 0 || sim >= length){

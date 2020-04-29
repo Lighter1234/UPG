@@ -1,8 +1,6 @@
 package project;
 
 import org.jfree.chart.ChartPanel;
-import sun.awt.WindowClosingListener;
-import waterflowsim.Simulator;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -36,6 +34,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     private boolean graphActive = false;
 
+    private boolean drawingRect = false;
+    private boolean panning = false;
+
     public MyMouseListener(Panel p){
         this.p = p;
         this.p.addMouseMotionListener(this);
@@ -51,39 +52,42 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        int[] point = p.findCells(e.getPoint());
-        if(point !=null){
-            if(!graphActive){
 
-                frame = new JFrame("Graph");
-                frame.addWindowListener(this);
+        if(e.getButton() == MouseEvent.BUTTON1) {
+            int[] point = p.findCells(e.getPoint());
 
-                graph = new GraphHandler(p.getData(), point);
+            if (point != null) {
+                if (!graphActive) {
 
-                chp = new ChartPanel(graph.createXYChart());
-                frame.add(chp);
+                    frame = new JFrame("Graph");
+                    frame.addWindowListener(this);
 
-                frame.pack();
-                frame.setLocationRelativeTo(null);
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                frame.setVisible(true);
+                    graph = new GraphHandler(p.getData(), point);
 
-                int timerPeriod = 1000 / 25  ; // Prekreslit okno 25krat za 1000 milisekund
-                t = new Timer(timerPeriod, new ActionListener() {
+                    chp = new ChartPanel(graph.createXYChart());
+                    frame.add(chp);
 
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        graph.refreshGraph();
-                        chp.repaint();
+                    frame.pack();
+                    frame.setLocationRelativeTo(null);
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setVisible(true);
+
+                    int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
+                    t = new Timer(timerPeriod, new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            graph.refreshGraph();
+                            chp.repaint();
 
 
-                    }
-                });
-                t.start();
-                graphActive = true;
+                        }
+                    });
+                    t.start();
+                    graphActive = true;
+                }
             }
         }
-
     }
 
     /**
@@ -94,7 +98,13 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        p.startPoint(e.getX(), e.getY());
+        if(e.getButton() == MouseEvent.BUTTON1) {
+            p.startPoint(e.getX(), e.getY());
+            this.drawingRect = true;
+        }else if(e.getButton() == MouseEvent.BUTTON3){
+            p.startPan(e.getX(), e.getY());
+            this.panning = true;
+        }
     }
 
     /**
@@ -105,40 +115,43 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     @Override
     public void mouseReleased(MouseEvent e) {
-        int[] selectedPoints = p.getSelectedPoints(e.getX(), e.getY());
 
-        if(selectedPoints !=null){
-            if(!graphActive){
+        if(drawingRect) {
+            int[] selectedPoints = p.getSelectedPoints(e.getX(), e.getY());
+            if (selectedPoints != null) {
+                if (!graphActive) {
 
-                frame = new JFrame("Graph");
-                frame.addWindowListener(this);
+                    frame = new JFrame("Graph");
+                    frame.addWindowListener(this);
 
-                graph = new GraphHandler(p.getData(), selectedPoints);
+                    graph = new GraphHandler(p.getData(), selectedPoints);
 
-                chp = new ChartPanel(graph.createXYChart());
-                frame.add(chp);
+                    chp = new ChartPanel(graph.createXYChart());
+                    frame.add(chp);
 
-                frame.pack();
-                frame.setLocationRelativeTo(null);
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                frame.setVisible(true);
+                    frame.pack();
+                    frame.setLocationRelativeTo(null);
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setVisible(true);
 
-                int timerPeriod = 1000 / 25  ; // Prekreslit okno 25krat za 1000 milisekund
-                t = new Timer(timerPeriod, new ActionListener() {
+                    int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
+                    t = new Timer(timerPeriod, new ActionListener() {
 
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        graph.refreshGraph();
-                        chp.repaint();
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            graph.refreshGraph();
+                            chp.repaint();
 
 
-                    }
-                });
-                t.start();
-                graphActive = true;
+                        }
+                    });
+                    t.start();
+                    graphActive = true;
+                }
             }
         }
-
+        drawingRect = false;
+        panning = false;
 
     }
 
@@ -160,8 +173,13 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     @Override
     public void mouseDragged(MouseEvent e) {
-        p.drawChoosingRectangle(e.getX(), e.getY());
+        if(drawingRect) {
+            p.drawChoosingRectangle(e.getX(), e.getY());
+        }else if(panning){
+            p.pan(e.getX(),e.getY());
+        }
     }
+
 
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -181,7 +199,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
         if(rot > 0){
             p.zoomOut();
         } else{
-            p.zoom();
+            p.zoom(e.getX(), e.getY());
         }
         p.repaint();
     }

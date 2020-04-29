@@ -167,6 +167,26 @@ public class Panel extends JPanel {
      */
     private double yRect;
 
+    /**
+     * Zoom offset for x axis
+     */
+    private double zoomOffsetX;
+
+    /**
+     * Zoom offset for y axis
+     */
+    private double zoomOffsetY;
+
+    /**
+     * Pan offset for x axis
+     */
+    private double panOffsetX;
+
+    /**
+     * Pan offset for y axis
+     */
+    private double panOffsetY;
+
 
     /**
      * Constructor to create a canvas for modeling water flow
@@ -261,6 +281,9 @@ public class Panel extends JPanel {
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 
+        this.startX = width/2;
+        this.startY = height/2;
+
         setAreas();
 
     }
@@ -275,8 +298,8 @@ public class Panel extends JPanel {
      * @return remodeled Point2D into canvas
      */
     private Point2D model2window(Point2D m){
-        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X,
-                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y) ;
+        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X /*+ zoomOffsetX */+ panX,
+                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y /*+ zoomOffsetY*/ + panY) ;
     }
 
 
@@ -315,10 +338,11 @@ public class Panel extends JPanel {
 //                    Point2D tmpPoint = model2window(POINTS[j][i]);
 
                     if (!cells[j][i].isDry()) {
-                        g.setColor(new Color(40,100,255));
+
+                        g.setColor(new Color(0f,0f,1f));
 
                     }else{
-                        g.setColor(new Color(40, (int)cells[j][i].getTerrainLevel(), 40));
+                        g.setColor(new Color(0, (int)cells[j][i].getTerrainLevel(), 0));
                     }
 //                    g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
 //                            deltaX * scale, deltaY * scale));
@@ -532,11 +556,19 @@ public class Panel extends JPanel {
         counterOfSeconds++;
     }
 
+    private double startX = 0.0;
+
+    private double startY = 0.0;
+
     /**
      * Method is to increase the scale for zoom
      */
-    public void zoom(){
+    public void zoom(double x, double y){
         zoom *= ZOOM_IN_CONSTANT;
+
+        zoomOffsetX = ( startX - (x - widthOfCanvas*ZOOM_IN_CONSTANT/2.0) );
+        zoomOffsetY = ( startY - (y - heightOfCanvas*ZOOM_IN_CONSTANT/2.0) );
+
     }
 
     /**
@@ -551,6 +583,10 @@ public class Panel extends JPanel {
      */
     public void resetZoom(){
         zoom = 1;
+        zoomOffsetX = 0;
+        zoomOffsetY = 0;
+        startX = 0;
+        startY = 0;
     }
 
     /**
@@ -563,7 +599,7 @@ public class Panel extends JPanel {
                 Point2D tmpPoint = model2window(POINTS[j][i]);
 
                 areas[j][i] = new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
-                        deltaX * scale, deltaY * scale);
+                        deltaX * scale * zoom, deltaY * scale * zoom);
 
             }
         }
@@ -656,7 +692,7 @@ public class Panel extends JPanel {
     public void drawChoosingRectangle(double x, double y){
         Graphics2D g = (Graphics2D)(this.getGraphics());
         g.draw(new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect)));
-
+        repaint();
     }
 
     /**
@@ -670,4 +706,27 @@ public class Panel extends JPanel {
         Rectangle2D r = new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect));
         return findCells(r);
     }
+
+
+    private double startPanX;
+
+    private double startPanY;
+
+    private double panX;
+
+    private double panY;
+
+    public void startPan(double x, double y){
+        this.startPanX = x;
+        this.startPanY = y;
+    }
+
+    public void pan(double x, double y){
+        this.panX = x - startPanX ;
+        this.panY = y - startPanY ;
+
+        repaint();
+    }
+
+
 }
