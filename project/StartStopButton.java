@@ -21,6 +21,7 @@ public class StartStopButton extends JButton implements ActionListener {
      */
     public StartStopButton(){
         super(BUTTON_NAMES[0]);   //Simulation is running
+        this.addActionListener(this);
     }
 
 

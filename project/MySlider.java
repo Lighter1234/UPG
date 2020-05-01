@@ -3,17 +3,25 @@ package project;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 
 public class MySlider extends JSlider implements ChangeListener {
 
+    /**
+     * Simulation speed xTimes faster
+     */
     private double simulationSpeed;
 
+    /**
+     * Hashtable for labels of the slider
+     */
     private final Hashtable<Integer, JLabel> labels = new Hashtable<>();
 
 
+    /**
+     * Creates a slider with labels and interval of <1, 200>
+     */
     public MySlider(){
         super(JSlider.HORIZONTAL, 1, 200, 50);  //Chosen values, cannot use final attributes
         this.simulationSpeed = 1.0;                               //because super constructor is being called
@@ -29,11 +37,16 @@ public class MySlider extends JSlider implements ChangeListener {
         this.setPaintTicks(true);
         this.setPaintLabels(true);
 
-
+        this.addChangeListener(this);
 
     }
 
-
+    /**
+     * Reaction on moving the slider
+     * speeds up / slows down the simulation
+     *
+     * @param e movement of the slider
+     */
     @Override
     public void stateChanged(ChangeEvent e) {
         JSlider source = (JSlider)e.getSource();
@@ -46,6 +59,11 @@ public class MySlider extends JSlider implements ChangeListener {
 
     }
 
+    /**
+     * Gives the amount simulations is faster than normal speed
+     *
+     * @return x time simulation is faster
+     */
     public double getSimulationSpeed(){
         return this.simulationSpeed;
     }

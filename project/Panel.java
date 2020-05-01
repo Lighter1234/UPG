@@ -7,6 +7,9 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
 import java.util.ArrayList;
 
 /**
@@ -14,7 +17,7 @@ import java.util.ArrayList;
  *
  * @author Josef Yassin Saleh
  */
-public class Panel extends JPanel {
+public class Panel extends JPanel implements Printable {
 
     /**
      * X-coordinate of the left corner of the "real-world"
@@ -187,6 +190,33 @@ public class Panel extends JPanel {
      */
     private double panOffsetY;
 
+    private final double[] MIN_MAX_HEIGHT;
+
+    /**
+     * Start of the pan on x-axis
+     */
+    private double startPanX;
+
+    /**
+     * Start of the pan on y-axis
+     */
+    private double startPanY;
+
+    /**
+     * Offset for pan on x-axis
+     */
+    private double panX;
+
+    /**
+     * Offset for pan on y-axis
+     */
+    private double panY;
+
+    /**
+     * Interval of heights
+     */
+    private double[] heightIntervals;
+
 
     /**
      * Constructor to create a canvas for modeling water flow
@@ -221,6 +251,10 @@ public class Panel extends JPanel {
 
             setPoints();
 
+            this.MIN_MAX_HEIGHT = findMaxMin();
+
+            this.heightIntervals = divideHeights();
+
         }
 
 
@@ -234,6 +268,8 @@ public class Panel extends JPanel {
             super.paintComponent(g);
 
             Graphics2D g2 = (Graphics2D) g;
+
+            this.gr = g2;
 
             computeModel2WindowTransformation(this.getWidth(), this.getHeight());
 
@@ -298,8 +334,8 @@ public class Panel extends JPanel {
      * @return remodeled Point2D into canvas
      */
     private Point2D model2window(Point2D m){
-        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X /*+ zoomOffsetX */+ panX,
-                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y /*+ zoomOffsetY*/ + panY) ;
+        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X + zoomOffsetX + panX,
+                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y + zoomOffsetY + panY) ;
     }
 
 
@@ -332,6 +368,8 @@ public class Panel extends JPanel {
      */
     private void drawWaterLayer(Graphics2D g){
 
+        float max = (float)this.MIN_MAX_HEIGHT[0];
+
             for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
                 for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
@@ -339,10 +377,17 @@ public class Panel extends JPanel {
 
                     if (!cells[j][i].isDry()) {
 
-                        g.setColor(new Color(0f,0f,1f));
+
+                        g.setColor(Color.blue);
 
                     }else{
-                        g.setColor(new Color(0, (int)cells[j][i].getTerrainLevel(), 0));
+                        float curr = (float) cells[j][i].getTerrainLevel();
+
+                        float difference = curr / max;
+
+                        g.setColor(Color.getHSBColor(difference*0.3f, difference * 0.5f , difference));
+
+//                        g.setColor(new Color(0, (int)cells[j][i].getTerrainLevel(), 0));
                     }
 //                    g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
 //                            deltaX * scale, deltaY * scale));
@@ -401,7 +446,7 @@ public class Panel extends JPanel {
      * @param name name of the water source
      * @param g graphical context
      */
-            private void drawWaterFlowLabel(Point2D position, Vector2D<Double> dirFlow, String name, Graphics2D g){
+    private void drawWaterFlowLabel(Point2D position, Vector2D<Double> dirFlow, String name, Graphics2D g){
 
                 double x =dirFlow.x;
                 double y =dirFlow.y;
@@ -437,7 +482,7 @@ public class Panel extends JPanel {
 
                     drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
 
-                    g.setColor(Color.BLACK);
+                    g.setColor(Color.gray);
 
 
                     double degrees = Math.abs(Math.toDegrees(theta));
@@ -560,14 +605,23 @@ public class Panel extends JPanel {
 
     private double startY = 0.0;
 
+    private Graphics2D gr;
+
     /**
      * Method is to increase the scale for zoom
      */
     public void zoom(double x, double y){
         zoom *= ZOOM_IN_CONSTANT;
+//
+//        double tempX = startX - x;
+//        double tempY = startY - y;
 
-        zoomOffsetX = ( startX - (x - widthOfCanvas*ZOOM_IN_CONSTANT/2.0) );
-        zoomOffsetY = ( startY - (y - heightOfCanvas*ZOOM_IN_CONSTANT/2.0) );
+        System.out.println(startX + " " + startY);
+        zoomOffsetX = startX - x;
+        zoomOffsetY = startY - y;
+
+        startX =  (startX - x) * ZOOM_IN_CONSTANT;
+        startY =  (startY - y) * ZOOM_IN_CONSTANT;
 
     }
 
@@ -579,7 +633,7 @@ public class Panel extends JPanel {
     }
 
     /**
-     * Method to reset the zoom
+     * Method to reset the zoom and pan
      */
     public void resetZoom(){
         zoom = 1;
@@ -587,6 +641,9 @@ public class Panel extends JPanel {
         zoomOffsetY = 0;
         startX = 0;
         startY = 0;
+        panX = 0;
+        panY = 0;
+        repaint();
     }
 
     /**
@@ -691,7 +748,17 @@ public class Panel extends JPanel {
      */
     public void drawChoosingRectangle(double x, double y){
         Graphics2D g = (Graphics2D)(this.getGraphics());
-        g.draw(new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect)));
+        double width = Math.abs(x-xRect);
+        double height = Math.abs(y-yRect);
+        double startX = xRect;
+        double startY = yRect;
+
+        if(xRect > x)
+            startX = x;
+        if(yRect > y)
+            startY = y;
+
+        g.draw(new Rectangle2D.Double(startX, startY, width, height ));
         repaint();
     }
 
@@ -708,24 +775,116 @@ public class Panel extends JPanel {
     }
 
 
-    private double startPanX;
 
-    private double startPanY;
-
-    private double panX;
-
-    private double panY;
-
+    /**
+     * Start point for pan
+     *
+     * @param x mouseclick on x-axis
+     * @param y mouseclick on y-axis
+     */
     public void startPan(double x, double y){
         this.startPanX = x;
         this.startPanY = y;
     }
 
+    /**
+     * Shift the simulation by mouse movement
+     *
+     * @param x mouseclick on x-axis
+     * @param y mouseclick on y-axis
+     */
     public void pan(double x, double y){
         this.panX = x - startPanX ;
         this.panY = y - startPanY ;
 
         repaint();
+    }
+
+    /**
+     * Finds highest and lowest height of the land of the simulation
+     *
+     * @return double[0] = highest
+     *         double[1] = lowest
+     */
+    private double[] findMaxMin(){
+
+        double temp[] = {Double.MIN_VALUE, Double.MAX_VALUE};
+
+        for(int i = 0 ; i < INFO.length ; i++){
+
+            double tempH = INFO[i].getTerrainLevel();
+
+            if(temp[0] < tempH){
+                temp[0] = tempH;
+            }else if(temp[1] > tempH){
+                temp[1] = tempH;
+            }
+        }
+//        System.out.println(temp[0] + " " + temp[1]);
+
+        return temp;
+
+    }
+
+
+    /**
+     * Divides the heights
+     *
+     * @return array representing intervals of heights
+     */
+    private double[] divideHeights(){
+        final int DIVIDER = 5;
+
+        final double DIVISION = (MIN_MAX_HEIGHT[0] - MIN_MAX_HEIGHT[1] ) / DIVIDER;
+
+        double[] temp = new double[DIVIDER +  1]; // + last one
+
+        temp[0] = MIN_MAX_HEIGHT[1];
+        temp[DIVIDER] = MIN_MAX_HEIGHT[0];
+
+        for(int i = 1 ; i < DIVIDER ; i++){
+            temp[i] = temp[i-1] + DIVISION;
+        }
+
+        return temp;
+    }
+
+    /**
+     * Returns intervals of heights
+     *
+     * @return height intervals
+     */
+    public double[] getIntervals(){
+        return this.heightIntervals;
+    }
+
+
+    /**
+     * Checks prints the state of the simulation
+     *
+     * @param graphics graphical context
+     * @param pageFormat format (A4, A3,...)
+     * @param pageIndex number of the page
+     * @return success / failure
+     * @throws PrinterException problem has occurred
+     */
+    @Override
+    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+        if(pageIndex > 0){
+            return NO_SUCH_PAGE;
+        }
+
+        Graphics2D g = (Graphics2D) graphics;
+        g.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+        double gScale = Math.min(pageFormat.getImageableWidth() / this.widthOfCanvas
+                , pageFormat.getImageableHeight() / this.heightOfCanvas);
+
+
+        g.scale(gScale,gScale);
+        this.drawWaterFlowState(g);
+
+        return PAGE_EXISTS;
     }
 
 
