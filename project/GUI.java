@@ -96,6 +96,9 @@ public class GUI {
         PrintButton pb = new PrintButton(p);
         GUIPanel.add(pb);
 
+        PolygonButton polyB = new PolygonButton(p);
+        GUIPanel.add(polyB);
+
         frame.add(GUIPanel, BorderLayout.SOUTH);
         frame.pack();
         frame.setLocationRelativeTo(null);

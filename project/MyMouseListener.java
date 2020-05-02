@@ -3,6 +3,7 @@ package project;
 import org.jfree.chart.ChartPanel;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
 public class MyMouseListener implements MouseListener, MouseMotionListener, MouseWheelListener, WindowListener {
@@ -54,37 +55,44 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
     public void mouseClicked(MouseEvent e) {
 
         if(e.getButton() == MouseEvent.BUTTON1) {
-            int[] point = p.findCells(e.getPoint());
+            if (!this.p.isChoosingPolygon()) {
+                int[] point = p.findCells(e.getPoint());
 
-            if (point != null) {
-                if (!graphActive) {
+                if (point != null) {
+                    if (!graphActive) {
 
-                    frame = new JFrame("Graph");
-                    frame.addWindowListener(this);
+                        frame = new JFrame("Graph");
+                        frame.addWindowListener(this);
 
-                    graph = new GraphHandler(p.getData(), point);
+                        graph = new GraphHandler(p.getData(), point);
 
-                    chp = new ChartPanel(graph.createXYChart());
-                    frame.add(chp);
+                        chp = new ChartPanel(graph.createXYChart());
+                        frame.add(chp);
 
-                    frame.pack();
-                    frame.setLocationRelativeTo(null);
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    frame.setVisible(true);
+                        frame.pack();
+                        frame.setLocationRelativeTo(null);
+                        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        frame.setVisible(true);
 
-                    int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
-                    t = new Timer(timerPeriod, new ActionListener() {
+                        int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
+                        t = new Timer(timerPeriod, new ActionListener() {
 
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            graph.refreshGraph();
-                            chp.repaint();
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                graph.refreshGraph();
+                                chp.repaint();
 
 
-                        }
-                    });
-                    t.start();
-                    graphActive = true;
+                            }
+                        });
+                        t.start();
+                        graphActive = true;
+                    }
+                }
+            }else{
+                int[] graphData =  p.addPointToPolygon(e.getPoint());
+                if(graphData != null) {
+
                 }
             }
         }
@@ -98,12 +106,14 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1) {
-            p.startPoint(e.getX(), e.getY());
-            this.drawingRect = true;
-        }else if(e.getButton() == MouseEvent.BUTTON3){
-            p.startPan(e.getX(), e.getY());
-            this.panning = true;
+        if(!this.p.isChoosingPolygon()) {
+            if (e.getButton() == MouseEvent.BUTTON1) {
+                p.startPoint(e.getX(), e.getY());
+                this.drawingRect = true;
+            } else if (e.getButton() == MouseEvent.BUTTON3) {
+                p.startPan(e.getX(), e.getY());
+                this.panning = true;
+            }
         }
     }
 
@@ -183,6 +193,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        if(p.isChoosingPolygon()){
+            p.choosePointForPolygon(e.getPoint());
+        }
 
     }
 
@@ -245,6 +258,11 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
     @Override
     public void windowDeactivated(WindowEvent e) {
+
+    }
+
+
+    private void createGraph(){
 
     }
 }

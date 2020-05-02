@@ -5,12 +5,15 @@ import waterflowsim.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Class for drawing of the simulation on the canvas
@@ -269,13 +272,19 @@ public class Panel extends JPanel implements Printable {
 
             Graphics2D g2 = (Graphics2D) g;
 
-            this.gr = g2;
+            this.gr = (Graphics2D)this.getGraphics();
 
             computeModel2WindowTransformation(this.getWidth(), this.getHeight());
 
             g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
 
             drawWaterFlowState(g2);
+
+            if(polygon != null) {
+                g.setColor(Color.black);
+                    g2.draw(polygon);
+            }
+
 
     }
 
@@ -669,7 +678,7 @@ public class Panel extends JPanel implements Printable {
      * @param r selected area
      * @return array of indexes in INFO array or null in case no points were found
      */
-    public int[] findCells(Rectangle2D r){
+    public int[] findCells(Shape r){
         ArrayList<Integer> indexes = new ArrayList<>();
 
         int counter = 0;
@@ -887,5 +896,98 @@ public class Panel extends JPanel implements Printable {
         return PAGE_EXISTS;
     }
 
+    /**
+     * Variable to determine whether user is choosing polygon
+     */
+    private boolean choosingPolygon = false;
 
+    /**
+     * Changes state of choosing polygon
+     */
+    public void changeStatePolygon() {
+        this.choosingPolygon = !this.choosingPolygon;
+
+        if ((this.choosingPolygon)) {
+            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            this.polygon = new Path2D.Double();
+        } else {
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            this.polygon = null;
+            this.polygonPoints.clear();
+            this.polygonCounter = 0;
+        }
+
+    }
+
+    /**
+     * Getter for choosing polygon
+     *
+     * @return true if user is choosing polygon, false if not
+     */
+    public boolean isChoosingPolygon(){
+        return this.choosingPolygon;
+    }
+
+    private ArrayList<Point2D> polygonPoints = new ArrayList<>();
+
+    private int polygonCounter = 0;
+
+    private Path2D polygon = new Path2D.Double();
+
+    /**
+     * Adds point to the queue
+     *
+     * @param p mouse location
+     */
+    public int[] addPointToPolygon(Point2D p){
+        if(!polygonPoints.isEmpty() && initialPolygonPoint.contains(p)){
+            polygon.closePath();
+            int[] indexes = findCells(polygon);
+            this.changeStatePolygon();
+            return indexes;
+
+        }else{
+            double x = p.getX();
+            double y = p.getY();
+
+            if(polygonCounter == 0){
+                initialPolygonPoint = new Rectangle2D.Double(x, y, 10* deltaX* zoom * scale,
+                        10* deltaY* zoom * scale);
+            }
+            polygonPoints.add(p);
+            polygonCounter++;
+            polygon.lineTo(x, y);
+            //gr.draw(polygon);
+            repaint();
+            return null;
+        }
+    }
+
+    Rectangle2D initialPolygonPoint;
+
+    /**
+     * Shows which the point is going to be added
+     *
+     * @param p mouse location
+     */
+    public void choosePointForPolygon(Point2D p){
+        if(polygonPoints.isEmpty()){
+            polygon.moveTo(p.getX(), p.getY());
+            return;
+        }
+
+        Point2D start = polygonPoints.get(polygonCounter-1);
+
+        if(initialPolygonPoint.contains(p)){
+            gr.setColor(Color.red);
+            gr.draw(new Line2D.Double(start,p));
+            gr.fill(initialPolygonPoint);
+        }else{
+            gr.setColor(Color.black);
+            gr.setStroke(new BasicStroke(2));
+            gr.draw(new Line2D.Double(start,p));
+        }
+        repaint();
+
+    }
 }
