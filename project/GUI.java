@@ -29,7 +29,6 @@ public class GUI {
      */
     public static double counter = 0.0;
 
-
     /**
      * Number of scenario
      */
@@ -85,19 +84,20 @@ public class GUI {
         //Reset button
         createResetButton();
 
-        MyMouseListener mml = new MyMouseListener(p);
+        //Mouse Listener
+        createMyMouseListener();
 
-//        SVGButton SVGB = new SVGButton(p);
-//        GUIPanel.add(SVGB);
+        //Legend button
+        createLegendButton();
 
-        LegendButton lb = new LegendButton(p);
-        GUIPanel.add(lb);
+        //Print button
+        createPrintButton();
 
-        PrintButton pb = new PrintButton(p);
-        GUIPanel.add(pb);
+        //Polygon button
+        createPolygonButton();
 
-        PolygonButton polyB = new PolygonButton(p);
-        GUIPanel.add(polyB);
+        //Bitmap button
+        createBitmapButton();
 
         frame.add(GUIPanel, BorderLayout.SOUTH);
         frame.pack();
@@ -105,8 +105,17 @@ public class GUI {
         frame.setVisible(true);
 
 
-
     }
+
+    /**
+     * Creates a button for export to bitmap
+     * and adds it into panel
+     */
+    private void createBitmapButton() {
+        BitmapButton bmpB = new BitmapButton(p);
+        GUIPanel.add(bmpB);
+    }
+
 
     /**
      * Starts the simulation
@@ -126,7 +135,7 @@ public class GUI {
                     Simulator.nextStep(step);
                     counter += step;
 
-                    if(counter >= 1) {
+                    if(p.hasFreeMemory() &&counter >= 1) {
                         p.refresh();
                         counter = 0.0;
                     }
@@ -137,6 +146,38 @@ public class GUI {
         });
         timer.start();
 
+    }
+
+
+    /**
+     * Creates a polygon button and adds it into GUI panel
+     */
+    private void createPolygonButton() {
+        PolygonButton polyB = new PolygonButton(p);
+        GUIPanel.add(polyB);
+    }
+
+    /**
+     * Creates a print button and adds it into GUI panel
+     */
+    private void createPrintButton() {
+        PrintButton pb = new PrintButton(p);
+        GUIPanel.add(pb);
+    }
+
+    /**
+     * Creates legend button and adds it to the GUI panel
+     */
+    private void createLegendButton() {
+        LegendButton lb = new LegendButton(p);
+        GUIPanel.add(lb);
+    }
+
+    /**
+     * Creates a mouse listener for panel
+     */
+    private void createMyMouseListener(){
+        MyMouseListener mml = new MyMouseListener(p);
     }
 
     /**
@@ -155,7 +196,6 @@ public class GUI {
      */
     private void createResetButton(){
         rsBut = new ResetButton(p);
-
         GUIPanel.add(rsBut);
     }
 

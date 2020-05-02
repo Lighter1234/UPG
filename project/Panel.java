@@ -2,15 +2,19 @@ package project;
 
 import waterflowsim.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -222,6 +226,48 @@ public class Panel extends JPanel implements Printable {
 
 
     /**
+     * Variable represting free memory to use
+     */
+    private boolean freeMemory = true;
+
+    /**
+     * Starting point of the polygon as a rectangle for easier click to end choosing polygon
+     */
+    Rectangle2D initialPolygonPoint;
+
+    /**
+     * Arraylist of polygon points
+     */
+    private ArrayList<Point2D> polygonPoints = new ArrayList<>();
+
+    /**
+     * Ammount of points
+     */
+    private int polygonCounter = 0;
+
+    /**
+     * Path2D representing polygon
+     */
+    private Path2D polygon = new Path2D.Double();
+
+    /**
+     * StartX for zoom
+     */
+    private double startX = 0.0;
+
+    /**
+     * StartY for zoom
+     */
+    private double startY = 0.0;
+
+    /**
+     * Graphical context of the panel
+     */
+    private Graphics2D gr;
+
+
+
+    /**
      * Constructor to create a canvas for modeling water flow
      *
      * @param scenario Number of scenario
@@ -281,7 +327,7 @@ public class Panel extends JPanel implements Printable {
             drawWaterFlowState(g2);
 
             if(polygon != null) {
-                g.setColor(Color.black);
+                g2.setColor(Color.black);
                     g2.draw(polygon);
             }
 
@@ -491,7 +537,7 @@ public class Panel extends JPanel implements Printable {
 
                     drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
 
-                    g.setColor(Color.gray);
+                    g.setColor(Color.black);
 
 
                     double degrees = Math.abs(Math.toDegrees(theta));
@@ -604,28 +650,31 @@ public class Panel extends JPanel implements Printable {
      * Method to refresh data about simulation each second of the simulation
      */
     public void refresh() {
-        for(int i = 0 ; i < INFO.length ; i++){
-            data.add(new Data(INFO[i].getWaterLevel(), counterOfSeconds));
+        int counter = 0;
+        try {
+            for(int i = 0 ; i < INFO.length ; i++){
+                data.add(new Data(INFO[i].getWaterLevel(), counterOfSeconds));
+                counter++;
+            }
+        }catch(OutOfMemoryError e){
+            JOptionPane.showMessageDialog(new JFrame(),"Error no memory, stopping to refresh data");
+            this.freeMemory = false;
+            for(int i = 0 ; i < counter ; i++){
+                data.remove(data.size()-1);
+            }
+
         }
         counterOfSeconds++;
     }
 
-    private double startX = 0.0;
 
-    private double startY = 0.0;
-
-    private Graphics2D gr;
 
     /**
      * Method is to increase the scale for zoom
      */
     public void zoom(double x, double y){
         zoom *= ZOOM_IN_CONSTANT;
-//
-//        double tempX = startX - x;
-//        double tempY = startY - y;
 
-        System.out.println(startX + " " + startY);
         zoomOffsetX = startX - x;
         zoomOffsetY = startY - y;
 
@@ -779,7 +828,17 @@ public class Panel extends JPanel implements Printable {
      * @return array of indexes
      */
     public int[] getSelectedPoints(double x, double y) {
-        Rectangle2D r = new Rectangle2D.Double(xRect, yRect, Math.abs(x-xRect), (y-yRect));
+        double width = Math.abs(x-xRect);
+        double height = Math.abs(y-yRect);
+        double startX = xRect;
+        double startY = yRect;
+
+        if(xRect > x)
+            startX = x;
+        if(yRect > y)
+            startY = y;
+
+        Rectangle2D r = new Rectangle2D.Double(startX, startY, width, height);
         return findCells(r);
     }
 
@@ -928,12 +987,6 @@ public class Panel extends JPanel implements Printable {
         return this.choosingPolygon;
     }
 
-    private ArrayList<Point2D> polygonPoints = new ArrayList<>();
-
-    private int polygonCounter = 0;
-
-    private Path2D polygon = new Path2D.Double();
-
     /**
      * Adds point to the queue
      *
@@ -944,6 +997,7 @@ public class Panel extends JPanel implements Printable {
             polygon.closePath();
             int[] indexes = findCells(polygon);
             this.changeStatePolygon();
+            repaint();
             return indexes;
 
         }else{
@@ -957,13 +1011,11 @@ public class Panel extends JPanel implements Printable {
             polygonPoints.add(p);
             polygonCounter++;
             polygon.lineTo(x, y);
-            //gr.draw(polygon);
             repaint();
             return null;
         }
     }
 
-    Rectangle2D initialPolygonPoint;
 
     /**
      * Shows which the point is going to be added
@@ -980,6 +1032,7 @@ public class Panel extends JPanel implements Printable {
 
         if(initialPolygonPoint.contains(p)){
             gr.setColor(Color.red);
+            gr.setStroke(new BasicStroke(2));
             gr.draw(new Line2D.Double(start,p));
             gr.fill(initialPolygonPoint);
         }else{
@@ -988,6 +1041,35 @@ public class Panel extends JPanel implements Printable {
             gr.draw(new Line2D.Double(start,p));
         }
         repaint();
+
+    }
+
+    /**
+     * Method checks if there's still free memory to use
+     *
+     * @return true in case if there is, false in case there's not
+     */
+    public boolean hasFreeMemory() {
+        return this.freeMemory;
+    }
+
+    public void exportToBitmap(int inputWidth, int inputHeight) {
+        double scale = Math.min((double)inputWidth/ this.getWidth() , (double)inputHeight/ this.getHeight());
+
+        BufferedImage image = new BufferedImage(inputWidth, inputHeight
+                , BufferedImage.TYPE_3BYTE_BGR);
+
+        Graphics2D g = image.createGraphics();
+
+        g.scale(scale, scale);
+        this.drawWaterFlowState(g);
+
+        try {
+            ImageIO.write(image, "PNG", new File("Bitmap.png"));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog( new JFrame(),"There was a problem with exporting");
+
+        }
 
     }
 }

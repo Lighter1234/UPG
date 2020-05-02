@@ -33,11 +33,26 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     private JFrame frame;
 
+    /**
+     * Variable to represent if graph is shown
+     */
     private boolean graphActive = false;
 
+    /**
+     * Variable to represent if the user is choosing rectangle
+     */
     private boolean drawingRect = false;
+
+    /**
+     * Variable to represent if the user is panning
+     */
     private boolean panning = false;
 
+    /**
+     * Takes Panel instance and adds this instance as it's mouse listener
+     *
+     * @param p panel to work with
+     */
     public MyMouseListener(Panel p){
         this.p = p;
         this.p.addMouseMotionListener(this);
@@ -60,39 +75,13 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
 
                 if (point != null) {
                     if (!graphActive) {
-
-                        frame = new JFrame("Graph");
-                        frame.addWindowListener(this);
-
-                        graph = new GraphHandler(p.getData(), point);
-
-                        chp = new ChartPanel(graph.createXYChart());
-                        frame.add(chp);
-
-                        frame.pack();
-                        frame.setLocationRelativeTo(null);
-                        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                        frame.setVisible(true);
-
-                        int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
-                        t = new Timer(timerPeriod, new ActionListener() {
-
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                graph.refreshGraph();
-                                chp.repaint();
-
-
-                            }
-                        });
-                        t.start();
-                        graphActive = true;
+                       createGraph(point);
                     }
                 }
             }else{
                 int[] graphData =  p.addPointToPolygon(e.getPoint());
                 if(graphData != null) {
-
+                    createGraph(graphData);
                 }
             }
         }
@@ -130,33 +119,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
             int[] selectedPoints = p.getSelectedPoints(e.getX(), e.getY());
             if (selectedPoints != null) {
                 if (!graphActive) {
-
-                    frame = new JFrame("Graph");
-                    frame.addWindowListener(this);
-
-                    graph = new GraphHandler(p.getData(), selectedPoints);
-
-                    chp = new ChartPanel(graph.createXYChart());
-                    frame.add(chp);
-
-                    frame.pack();
-                    frame.setLocationRelativeTo(null);
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    frame.setVisible(true);
-
-                    int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
-                    t = new Timer(timerPeriod, new ActionListener() {
-
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            graph.refreshGraph();
-                            chp.repaint();
-
-
-                        }
-                    });
-                    t.start();
-                    graphActive = true;
+                    createGraph(selectedPoints);
                 }
             }
         }
@@ -191,6 +154,12 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
     }
 
 
+    /**
+     * If user is choosing polygon,
+     * draws a line towards the point it user has moved to
+     *
+     * @param e mouse movement
+     */
     @Override
     public void mouseMoved(MouseEvent e) {
         if(p.isChoosingPolygon()){
@@ -262,7 +231,37 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
     }
 
 
-    private void createGraph(){
+    /**
+     * Creates a graph
+     *
+     * @param selectedPoints indexes of the cells
+     */
+    private void createGraph(int[] selectedPoints){
+        frame = new JFrame("Graph");
+        frame.addWindowListener(this);
 
+        graph = new GraphHandler(p.getData(), selectedPoints);
+
+        chp = new ChartPanel(graph.createXYChart());
+        frame.add(chp);
+
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setVisible(true);
+
+        int timerPeriod = 1000 / 25; // Prekreslit okno 25krat za 1000 milisekund
+        t = new Timer(timerPeriod, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                graph.refreshGraph();
+                chp.repaint();
+
+
+            }
+        });
+        t.start();
+        graphActive = true;
     }
 }

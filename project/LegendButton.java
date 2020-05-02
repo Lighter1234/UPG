@@ -6,8 +6,16 @@ import java.awt.event.ActionListener;
 
 public class LegendButton extends JButton implements ActionListener {
 
+    /**
+     * Panel to work with
+     */
     private Panel p;
 
+    /**
+     * Creates a button with text "Legend"
+     *
+     * @param p panel to work with
+     */
     public LegendButton(Panel p){
         super("Legend");
         this.p = p;
@@ -15,7 +23,11 @@ public class LegendButton extends JButton implements ActionListener {
     }
 
 
-
+    /**
+     * After click shows up frame with legend of the colors
+     *
+     * @param e user click
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         JFrame frame = new JFrame("Legend");
