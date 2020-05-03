@@ -674,13 +674,6 @@ public class Panel extends JPanel implements Printable {
      */
     public void zoom(double x, double y){
         zoom *= ZOOM_IN_CONSTANT;
-
-        zoomOffsetX = startX - x;
-        zoomOffsetY = startY - y;
-
-        startX =  (startX - x) * ZOOM_IN_CONSTANT;
-        startY =  (startY - y) * ZOOM_IN_CONSTANT;
-
     }
 
     /**
@@ -695,10 +688,6 @@ public class Panel extends JPanel implements Printable {
      */
     public void resetZoom(){
         zoom = 1;
-        zoomOffsetX = 0;
-        zoomOffsetY = 0;
-        startX = 0;
-        startY = 0;
         panX = 0;
         panY = 0;
         repaint();
@@ -708,13 +697,15 @@ public class Panel extends JPanel implements Printable {
      * Sets the areas to know where the cells are located
      */
     private void setAreas() {
+        double width = deltaX * scale * zoom;
+        double height = deltaY * scale * zoom;
         for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
             for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
                 Point2D tmpPoint = model2window(POINTS[j][i]);
-
+                System.out.println(tmpPoint.toString());
                 areas[j][i] = new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
-                        deltaX * scale * zoom, deltaY * scale * zoom);
+                        width  , height);
 
             }
         }
@@ -735,7 +726,7 @@ public class Panel extends JPanel implements Printable {
 
             for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
 
-                if(r.contains(model2window(this.POINTS[j][i]))){
+                if(r.contains(this.areas[j][i])){
                     indexes.add(counter);
                 }
 
