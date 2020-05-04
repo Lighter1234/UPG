@@ -97,7 +97,7 @@ public class GUI {
         createPolygonButton();
 
         //Bitmap button
-//        createBitmapButton();
+        createBitmapButton();
 
         frame.add(GUIPanel, BorderLayout.SOUTH);
 

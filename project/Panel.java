@@ -1028,6 +1028,16 @@ public class Panel extends JPanel implements Printable {
         return this.freeMemory;
     }
 
+    /**
+     * Creates an instance of BufferedImage, with inputted width and height,
+     * scales it non-proportionally and draws the waterflowstate on the picture,
+     * also checks if the export was successful, in case it was window with "ok" will show up
+     * otherwise a window with "There was a problem with exporting" will show up
+     * File is named Bitmap.png
+     *
+     * @param inputWidth width of picture
+     * @param inputHeight height of picture
+     */
     public void exportToBitmap(int inputWidth, int inputHeight) {
         double scale = Math.min((double)inputWidth/ this.getWidth() , (double)inputHeight/ this.getHeight());
 
