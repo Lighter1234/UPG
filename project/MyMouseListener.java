@@ -68,7 +68,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-
+        System.out.println(e.getPoint().toString());
         if(e.getButton() == MouseEvent.BUTTON1) {
             if (!this.p.isChoosingPolygon()) {
                 int[] point = p.findCells(e.getPoint());

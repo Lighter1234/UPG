@@ -60,9 +60,7 @@ public class GUI {
 
         frame = new JFrame("A18B0307P");
         frame.setLayout(new BorderLayout());
-        p = new Panel(sim);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(p, BorderLayout.CENTER);
 
         makeGUI();
     }
@@ -74,6 +72,8 @@ public class GUI {
     private void makeGUI(){
 
         GUIPanel = new JPanel();
+        p = new Panel(sim);
+
 
         //SpeedSlider
         createSpeedSlider();
@@ -97,10 +97,15 @@ public class GUI {
         createPolygonButton();
 
         //Bitmap button
-        createBitmapButton();
+//        createBitmapButton();
 
         frame.add(GUIPanel, BorderLayout.SOUTH);
+
+        frame.add(p, BorderLayout.CENTER);
+
+
         frame.pack();
+
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 

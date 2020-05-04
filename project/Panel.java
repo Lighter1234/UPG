@@ -16,8 +16,6 @@ import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Class for drawing of the simulation on the canvas
@@ -125,7 +123,7 @@ public class Panel extends JPanel implements Printable {
     /**
      * Constant to create offset for arrows on the edge
      */
-    private final int ARROW_OFFSET = 10;
+    private final int ARROW_OFFSET = 7;
 
     /**
      * Constant representing left edge for both X axises
@@ -251,20 +249,14 @@ public class Panel extends JPanel implements Printable {
     private Path2D polygon = new Path2D.Double();
 
     /**
-     * StartX for zoom
-     */
-    private double startX = 0.0;
-
-    /**
-     * StartY for zoom
-     */
-    private double startY = 0.0;
-
-    /**
      * Graphical context of the panel
      */
     private Graphics2D gr;
 
+    /**
+     * Variable to determine whether user is choosing polygon
+     */
+    private boolean choosingPolygon = false;
 
 
     /**
@@ -273,7 +265,7 @@ public class Panel extends JPanel implements Printable {
      * @param scenario Number of scenario
      */
     public Panel(int scenario){
-        this.setPreferredSize(new Dimension(600,480));
+        this.setPreferredSize(new Dimension(657,480));
             Simulator.runScenario(scenario);
 
             this.INFO = Simulator.getData();
@@ -304,6 +296,7 @@ public class Panel extends JPanel implements Printable {
 
             this.heightIntervals = divideHeights();
 
+
         }
 
 
@@ -322,7 +315,7 @@ public class Panel extends JPanel implements Printable {
 
             computeModel2WindowTransformation(this.getWidth(), this.getHeight());
 
-            g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
+            g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, this.FONT_HEIGHT ));
 
             drawWaterFlowState(g2);
 
@@ -367,13 +360,20 @@ public class Panel extends JPanel implements Printable {
 
         scale = Math.min(scaleX, scaleY);
 
-        OFFSET_X = (width - this.SIM_WIDTH*scale) /2;
-        OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
+        if (scaleX < scaleY) {
+            scale = scaleX;
+            OFFSET_X = 0;
+            OFFSET_Y = (this.getHeight() - SIM_HEIGHT*scale) / 2;
+        } else {
+            scale = scaleY;
+            OFFSET_X = (this.getWidth() - SIM_WIDTH*scale) / 2;
+            OFFSET_Y = 0;
+        }
+
+//        OFFSET_X =  (width - this.SIM_WIDTH*scale) /2;
+//        OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
         this.FONT_HEIGHT = (int)(0.03 * height);
-
-        this.startX = width/2;
-        this.startY = height/2;
 
         setAreas();
 
@@ -405,15 +405,6 @@ public class Panel extends JPanel implements Printable {
 
     }
 
-    /**
-     * Now empty method
-     *
-     * @param g Graphic context
-     */
-    private void drawTerrain(Graphics2D g){
-    //Empty
-
-    }
 
 
     /**
@@ -442,10 +433,7 @@ public class Panel extends JPanel implements Printable {
 
                         g.setColor(Color.getHSBColor(difference*0.3f, difference * 0.5f , difference));
 
-//                        g.setColor(new Color(0, (int)cells[j][i].getTerrainLevel(), 0));
                     }
-//                    g.fill(new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
-//                            deltaX * scale, deltaY * scale));
                     g.fill(areas[j][i]);
                 }
             }
@@ -537,7 +525,7 @@ public class Panel extends JPanel implements Printable {
 
                     drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
 
-                    g.setColor(Color.black);
+                    g.setColor(Color.yellow);
 
 
                     double degrees = Math.abs(Math.toDegrees(theta));
@@ -697,13 +685,14 @@ public class Panel extends JPanel implements Printable {
      * Sets the areas to know where the cells are located
      */
     private void setAreas() {
-        double width = deltaX * scale * zoom;
-        double height = deltaY * scale * zoom;
+        double width = deltaX * Math.ceil(scale) * zoom;
+        double height = deltaY * Math.ceil(scale) * zoom;
+
         for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
             for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
                 Point2D tmpPoint = model2window(POINTS[j][i]);
-                System.out.println(tmpPoint.toString());
+
                 areas[j][i] = new Rectangle2D.Double(tmpPoint.getX(), tmpPoint.getY(),
                         width  , height);
 
@@ -879,7 +868,6 @@ public class Panel extends JPanel implements Printable {
                 temp[1] = tempH;
             }
         }
-//        System.out.println(temp[0] + " " + temp[1]);
 
         return temp;
 
@@ -947,11 +935,6 @@ public class Panel extends JPanel implements Printable {
     }
 
     /**
-     * Variable to determine whether user is choosing polygon
-     */
-    private boolean choosingPolygon = false;
-
-    /**
      * Changes state of choosing polygon
      */
     public void changeStatePolygon() {
@@ -996,8 +979,9 @@ public class Panel extends JPanel implements Printable {
             double y = p.getY();
 
             if(polygonCounter == 0){
-                initialPolygonPoint = new Rectangle2D.Double(x, y, 10* deltaX* zoom * scale,
-                        10* deltaY* zoom * scale);
+                final int ENLARGE = 10;
+                initialPolygonPoint = new Rectangle2D.Double(x, y, ENLARGE* deltaX* zoom * scale,
+                        ENLARGE* deltaY* zoom * scale);
             }
             polygonPoints.add(p);
             polygonCounter++;
