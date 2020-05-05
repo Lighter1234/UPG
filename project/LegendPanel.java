@@ -12,13 +12,23 @@ public class LegendPanel extends JPanel {
     double[] heightIntervals;
 
     /**
+     * Width of the panel
+     */
+    private final int WIDTH = 640;
+
+    /**
+     * Height of the panel
+     */
+    private final int HEIGTH = 100;
+
+    /**
      * Creates an instance of legend panel
      *
      * @param heightIntervals height intervals
      */
     public LegendPanel(double[] heightIntervals){
         this.heightIntervals = heightIntervals;
-        this.setPreferredSize(new Dimension(640, 100));
+        this.setPreferredSize(new Dimension(WIDTH, HEIGTH));
     }
 
 
@@ -35,7 +45,8 @@ public class LegendPanel extends JPanel {
 
         float max = (float)this.heightIntervals[heightIntervals.length-1];
 
-        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        final int FONT_SIZE = 12;
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, FONT_SIZE));
 
         for(int i = 0 ; i < heightIntervals.length - 1 ; i++){
 

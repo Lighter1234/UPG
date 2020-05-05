@@ -31,6 +31,5 @@ public class PolygonButton extends JButton implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         this.p.changeStatePolygon();
-
     }
 }

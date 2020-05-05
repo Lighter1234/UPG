@@ -18,6 +18,10 @@ public class MySlider extends JSlider implements ChangeListener {
      */
     private final Hashtable<Integer, JLabel> labels = new Hashtable<>();
 
+    /**
+     * Constant to divide
+     */
+    private final double DIVIDER = 50.0;
 
     /**
      * Creates a slider with labels and interval of <1, 200>
@@ -50,7 +54,7 @@ public class MySlider extends JSlider implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         JSlider source = (JSlider)e.getSource();
-        this.simulationSpeed = source.getValue()/50.0;
+        this.simulationSpeed = source.getValue()/DIVIDER;
         if(this.simulationSpeed >= 1) {
             this.setToolTipText(this.simulationSpeed + "x faster");
         }else{

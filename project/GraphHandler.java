@@ -54,13 +54,13 @@ public class GraphHandler{
      */
     public JFreeChart createXYChart(){
         dataset = new XYSeriesCollection();
-        data = new XYSeries("A");
+        data = new XYSeries("Water level");
         dataset.addSeries(data);
 
         refreshGraph();
 
-        return ChartFactory.createXYLineChart("Graf zavislosti vysky vody na case t", "cas t (s)",
-                "Vyska hladiny vody (m)" ,dataset);
+        return ChartFactory.createXYLineChart("Graph of water level dependence on water", "time t (s)",
+                "Water level (m)" ,dataset);
     }
 
 
@@ -97,7 +97,6 @@ public class GraphHandler{
                     index[j] = index[j] + NEXT; // Creates a structure that helps with adding new element
                                                 // without having to create the graph from the scratch
                 }
-
 
                 tempHeight /= counter;
 

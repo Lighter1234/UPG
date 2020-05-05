@@ -11,7 +11,9 @@ public class BitmapButton extends JButton implements ActionListener {
      */
     private Panel p;
 
-    private final int ROWS  = 1;
+    /**
+     * Amount of columns, to show space in text field
+     */
     private final int COLUMNS = 4;
 
     /**
