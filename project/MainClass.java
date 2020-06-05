@@ -7,49 +7,35 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.awt.*;
 
-
+/**
+ * Class to start the program
+ *
+ * @author Josef Yassin Saleh
+ */
 public class MainClass {
 
     public static void main(String[] args){
-        int sim;
+        int sim = 0;
         if(args.length == 0){
-            sim = 0;
-        }else{
-            sim = Integer.parseInt(args[0]);
+            sim = 7;
+        }else {
+            try {
+                sim = Integer.parseInt(args[0]);
+            }catch(Exception e){
+                System.out.println("Je nutne zadat kladny celociselny parametr!");
+                System.exit(0);
+            }
         }
 
-        JFrame frame = new JFrame("A18B0307P");
-        Panel p = new Panel(sim);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
- //       p.setPreferredSize(new Dimension(800,600));
-        frame.add(p);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        int length = Simulator.getScenarios().length;
 
-//        java.util.Timer myTime = new Timer();
-//        myTime.scheduleAtFixedRate(new TimerTask() {
-//
-//            @Override
-//            public void run() {
-//                Simulator.nextStep(.1);
-//                p.repaint();
-//
-//            }
-//        }, 0, 100);
-        Timer timer;
-        int timerPeriod = 1000 / 60; // Prekreslit okno 25krat za 1000 milisekund
-        long startTime = System.currentTimeMillis();
-        timer = new Timer(timerPeriod, new ActionListener() {
+        if(sim < 0 || sim >= length){
+            System.out.println("Je nutne zadat parametr v rozsahu <0, " + length + ")" );
+            System.exit(0);
+        }
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-//                drawingPanel.setTime((System.currentTimeMillis() - startTime) / 1000.0);
-                Simulator.nextStep(.1);
-                p.repaint();
-            }
-        });
-        timer.start();
+        GUI gui = new GUI(sim);
+        gui.startSimulation();
 
 
     }
