@@ -179,7 +179,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener, Mous
         if(rot > 0){
             p.zoomOut();
         } else{
-            p.zoom(e.getX(), e.getY());
+            p.zoom();
         }
         p.repaint();
     }

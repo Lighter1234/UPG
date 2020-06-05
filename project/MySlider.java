@@ -24,7 +24,7 @@ public class MySlider extends JSlider implements ChangeListener {
     private final double DIVIDER = 50.0;
 
     /**
-     * Creates a slider with labels and interval of <1, 200>
+     * Creates a slider with labels and interval of 1 and 200
      */
     public MySlider(){
         super(JSlider.HORIZONTAL, 1, 200, 50);  //Chosen values, cannot use final attributes

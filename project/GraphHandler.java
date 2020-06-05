@@ -59,7 +59,7 @@ public class GraphHandler{
 
         refreshGraph();
 
-        return ChartFactory.createXYLineChart("Graph of water level dependence on water", "time t (s)",
+        return ChartFactory.createXYLineChart("Graph of water level dependence on time", "time t (s)",
                 "Water level (m)" ,dataset);
     }
 

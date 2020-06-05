@@ -176,16 +176,6 @@ public class Panel extends JPanel implements Printable {
     private double yRect;
 
     /**
-     * Zoom offset for x axis
-     */
-    private double zoomOffsetX;
-
-    /**
-     * Zoom offset for y axis
-     */
-    private double zoomOffsetY;
-
-    /**
      * Pan offset for x axis
      */
     private double panOffsetX;
@@ -265,7 +255,7 @@ public class Panel extends JPanel implements Printable {
      * @param scenario Number of scenario
      */
     public Panel(int scenario){
-        this.setPreferredSize(new Dimension(657,480));
+        this.setPreferredSize(new Dimension(600,480));
             Simulator.runScenario(scenario);
 
             this.INFO = Simulator.getData();
@@ -355,23 +345,25 @@ public class Panel extends JPanel implements Printable {
         this.widthOfCanvas = width;
         this.heightOfCanvas = height;
 
-        double scaleX = width/this.SIM_WIDTH;
-        double scaleY = height/this.SIM_HEIGHT;
+        final double THREE_DECIMAL_PLACES = 1000.0;
 
-        scale = Math.min(scaleX, scaleY);
+        double scaleX =  Math.round((width/this.SIM_WIDTH)*THREE_DECIMAL_PLACES)/THREE_DECIMAL_PLACES;
+        double scaleY = Math.round((height/this.SIM_HEIGHT) * THREE_DECIMAL_PLACES)/THREE_DECIMAL_PLACES;
 
-        if (scaleX < scaleY) {
-            scale = scaleX;
-            OFFSET_X = 0;
-            OFFSET_Y = (this.getHeight() - SIM_HEIGHT*scale) / 2;
-        } else {
-            scale = scaleY;
-            OFFSET_X = (this.getWidth() - SIM_WIDTH*scale) / 2;
-            OFFSET_Y = 0;
-        }
+        scale =Math.min(scaleX, scaleY);
 
-//        OFFSET_X =  (width - this.SIM_WIDTH*scale) /2;
-//        OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
+//        if (scaleX < scaleY) {
+//            scale = scaleX;
+//            OFFSET_X = 0;
+//            OFFSET_Y = (this.getHeight() - SIM_HEIGHT*scale) / 2;
+//        } else {
+//            scale = scaleY;
+//            OFFSET_X = (this.getWidth() - SIM_WIDTH*scale) / 2;
+//            OFFSET_Y = 0;
+//        }
+
+        OFFSET_X =  (width - this.SIM_WIDTH*scale) /2;
+        OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 
@@ -389,8 +381,8 @@ public class Panel extends JPanel implements Printable {
      * @return remodeled Point2D into canvas
      */
     private Point2D model2window(Point2D m){
-        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X + zoomOffsetX + panX,
-                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y + zoomOffsetY + panY) ;
+        return new Point2D.Double(((m.getX()-startXSim) * this.scale * this.zoom) + OFFSET_X + panX,
+                (((m.getY() - startYSim) * this.scale * this.zoom))+ OFFSET_Y + panY) ;
     }
 
 
@@ -525,8 +517,7 @@ public class Panel extends JPanel implements Printable {
 
                     drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
 
-                    g.setColor(Color.yellow);
-
+                    g.setColor(Color.white);
 
                     double degrees = Math.abs(Math.toDegrees(theta));
 
@@ -660,7 +651,7 @@ public class Panel extends JPanel implements Printable {
     /**
      * Method is to increase the scale for zoom
      */
-    public void zoom(double x, double y){
+    public void zoom(){
         zoom *= ZOOM_IN_CONSTANT;
     }
 
@@ -685,8 +676,8 @@ public class Panel extends JPanel implements Printable {
      * Sets the areas to know where the cells are located
      */
     private void setAreas() {
-        double width = deltaX * Math.ceil(scale) * zoom;
-        double height = deltaY * Math.ceil(scale) * zoom;
+        double width = deltaX * scale * zoom;
+        double height = deltaY * scale * zoom;
 
         for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
@@ -965,6 +956,7 @@ public class Panel extends JPanel implements Printable {
      * Adds point to the queue
      *
      * @param p mouse location
+     * @return null if path polygon isn't done, array of indexes in case it is
      */
     public int[] addPointToPolygon(Point2D p){
         if(!polygonPoints.isEmpty() && initialPolygonPoint.contains(p)){

@@ -16,8 +16,8 @@ public class Data {
     /**
      * Constructor for Data used in graphs
      *
-     * @param waterHeight
-     * @param sec
+     * @param waterHeight waterHeight of the cell
+     * @param sec which second in simulation
      */
     public Data(double waterHeight, int sec ){
         this.waterHeight = waterHeight;
