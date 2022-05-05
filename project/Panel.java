@@ -352,7 +352,6 @@ public class Panel extends JPanel implements Printable {
 
         scale =Math.min(scaleX, scaleY);
 
-<<<<<<< HEAD
 //        this.scale = Math.min(scaleX,
 //                scaleY);
 //
@@ -369,20 +368,6 @@ public class Panel extends JPanel implements Printable {
 
 
         this.FONT_HEIGHT = (int)(0.03 * this.getHeight());
-=======
-//        if (scaleX < scaleY) {
-//            scale = scaleX;
-//            OFFSET_X = 0;
-//            OFFSET_Y = (this.getHeight() - SIM_HEIGHT*scale) / 2;
-//        } else {
-//            scale = scaleY;
-//            OFFSET_X = (this.getWidth() - SIM_WIDTH*scale) / 2;
-//            OFFSET_Y = 0;
-//        }
-
-        OFFSET_X =  (width - this.SIM_WIDTH*scale) /2;
-        OFFSET_Y = (height - this.SIM_HEIGHT*scale) / 2;
->>>>>>> MouseListeners_outside_of_the_Panel
 
         this.FONT_HEIGHT = (int)(0.03 * height);
 
@@ -427,31 +412,12 @@ public class Panel extends JPanel implements Printable {
 
         float max = (float)this.MIN_MAX_HEIGHT[0];
 
-<<<<<<< HEAD
-        double tmpStartingX = this.startXSim;
-        double tmpStartingY = this.startYSim;
-
-
-
-        for(int i = 0 ; i < INFO.length ; i++){
-=======
             for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
->>>>>>> MouseListeners_outside_of_the_Panel
 
                 for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
 //                    Point2D tmpPoint = model2window(POINTS[j][i]);
 
-<<<<<<< HEAD
-            g.setColor(new Color(40,20,255));
-
-            if(tmp.isDry()){
-                 //   g.setColor(new Color(100,255,100));
-                continue;
-                }else{
-                    Point2D tmpPoint = POINTS[i];
-=======
                     if (!cells[j][i].isDry()) {
->>>>>>> MouseListeners_outside_of_the_Panel
 
 
                         g.setColor(Color.blue);
@@ -487,26 +453,7 @@ public class Panel extends JPanel implements Printable {
                 for(int i = 0 ; i < wsu.length ; i++){
 //                    System.out.println("i: " + i);
                   int index = wsu[i].getIndex();
-<<<<<<< HEAD
                   Point2D tmp = POINTS[index];
-=======
-                  int x = index % AMMOUNT_OF_CELLS_WIDTH;
-                  int y = index / AMMOUNT_OF_CELLS_WIDTH;
-
-                  //to create an offset for arrow that is on the edge
-                  if(x < AMMOUNT_OF_CELLS_WIDTH/LEFT_EDGE_OFFSET){
-                      x += AMMOUNT_OF_CELLS_WIDTH/ARROW_OFFSET;
-                  }else if(x >= (AMMOUNT_OF_CELLS_WIDTH * RIGHT_EDGE_OFFSET)){
-                      x -= AMMOUNT_OF_CELLS_WIDTH/ARROW_OFFSET;
-                  }
-                    if(y < AMMOUNT_OF_CELLS_HEIGHT/LEFT_EDGE_OFFSET){
-                      y+= AMMOUNT_OF_CELLS_HEIGHT/ARROW_OFFSET;
-                  }else if(y >= (AMMOUNT_OF_CELLS_HEIGHT * RIGHT_EDGE_OFFSET)){
-                      y-= AMMOUNT_OF_CELLS_HEIGHT/ARROW_OFFSET;
-                  }
-
-                    Point2D tmp = POINTS[x][y];
->>>>>>> MouseListeners_outside_of_the_Panel
 
                   this.drawWaterFlowLabel(tmp, INFO[index].getGradient(), wsu[i].getName(), g);
 
@@ -526,43 +473,30 @@ public class Panel extends JPanel implements Printable {
      */
     private void drawWaterFlowLabel(Point2D position, Vector2D<Double> dirFlow, String name, Graphics2D g){
 
-<<<<<<< HEAD
                 double x = Math.abs((double)dirFlow.x);
                 double y = Math.abs((double)dirFlow.y);
 //                System.out.println( " Name: " + name );
 
                 if(!Double.isNaN(x) || !Double.isNaN(y)) {
-=======
-                double x =dirFlow.x;
-                double y =dirFlow.y;
->>>>>>> MouseListeners_outside_of_the_Panel
 
                 if((!Double.isNaN(x) || !Double.isNaN(y) )) {
 
-<<<<<<< HEAD
-=======
-                  position = model2window(position);
->>>>>>> MouseListeners_outside_of_the_Panel
 
                 //Vector created from points (0, heigthOfCanvas) and (widthOfCanvas, heightOfCanvas)
                 //Represents the vector aligned with axis x
                 double xVector = this.widthOfCanvas;
                 double yVector = 0;
 
-<<<<<<< HEAD
                 double theta = Math.acos((xVector* x + yVector * y) /
                         ((Math.hypot(xVector, yVector) * Math.hypot(x,y))
                         ));
-=======
->>>>>>> MouseListeners_outside_of_the_Panel
 
-                double theta = Math.acos(
-                        (xVector* x + yVector * y) /
-                        ((Math.hypot(xVector, yVector) * Math.hypot(x,y))
-                        )) ;
+                // double theta = Math.acos(
+                //         (xVector* x + yVector * y) /
+                //         ((Math.hypot(xVector, yVector) * Math.hypot(x,y))
+                //         )) ;
 
 
-<<<<<<< HEAD
                     g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, this.FONT_HEIGHT ));
 
                     FontMetrics metrics = g.getFontMetrics(g.getFont());
@@ -590,46 +524,6 @@ public class Panel extends JPanel implements Printable {
 
                 }else
                     return;
-=======
-                if(dirFlow.y < 0 ){
-                    theta *= -1;
-                }
-
-                    double xP = position.getX();
-                    double yP = position.getY();
-
-                    FontMetrics metrics = g.getFontMetrics(g.getFont());
-                    int textWidth = metrics.stringWidth(name);
-
-                    g.translate(xP,yP);
-                    g.rotate(theta);
-
-                    drawArrow(new Point2D.Double(0, 0), new Point2D.Double(-textWidth, 0), g);
-
-                    g.setColor(Color.white);
-
-                    double degrees = Math.abs(Math.toDegrees(theta));
-
-                    if( ( degrees > 90 && degrees < 180 ) || ( degrees > 270  && degrees < 360)){
-                        g.scale(-1, -1);
-                        g.translate(0, -metrics.getDescent());  //To create a little offset between arrow and text
-                        g.drawString(name, 0, 0);
-                        g.translate(0, metrics.getDescent());
-
-                        g.scale(-1, -1);
-                    }else{
-                        g.translate(-textWidth, -metrics.getDescent());  //To create a little offset between arrow and text
-
-                        g.drawString(name, 0, 0);
-
-                        g.translate(textWidth, metrics.getDescent());
-                    }
-
-                    g.rotate(-theta);
-                    g.translate(-xP ,-yP);
-
-                }
->>>>>>> MouseListeners_outside_of_the_Panel
 
             }
 
@@ -642,15 +536,8 @@ public class Panel extends JPanel implements Printable {
      * @param g graphics context
      */
     private void drawArrow(Point2D start, Point2D end, Graphics2D g){
-<<<<<<< HEAD
 
         //Taken from exercise No.3
-=======
-
-        //Taken from exercise No.3 and edited with few tweaks
-
-        g.setStroke(new BasicStroke(3));
->>>>>>> MouseListeners_outside_of_the_Panel
 
                 g.setColor(Color.RED);
 
@@ -696,29 +583,6 @@ public class Panel extends JPanel implements Printable {
      * Calculates the points and saves them into an array
      */
     private void setPoints() {
-<<<<<<< HEAD
-        double tmpStartingX = this.startXSim ;
-        double tmpStartingY = this.startYSim;
-
-//
-//                int counter = 0;
-//
-//
-//
-//                    for(int j = 0 ; j < this.AMMOUNT_OF_CELLS_HEIGHT ; j++){
-//                        double tmpStartingX = this.startXSim ;
-//                        double tmpStartingY = this.startYSim+ j * this.deltaX;
-//                        for(int i = 0 ; i < this.AMMOUNT_OF_CELLS_WIDTH ; i++){
-//
-//                            tmpStartingX += this.deltaX;
-//                        POINTS[counter++] = new Point2D.Double(tmpStartingX, tmpStartingY);
-//                    }
-//                }
-
-        System.out.println("INFO : " +INFO.length  + " CELLS: " + AMMOUNT_OF_CELLS_HEIGHT * AMMOUNT_OF_CELLS_WIDTH);
-        System.out.println("DeltaX : " +deltaX  + " deltaY : " + deltaY);
-
-=======
         int counter = 0;
 
 
@@ -798,7 +662,6 @@ public class Panel extends JPanel implements Printable {
         double height = deltaY * scale * zoom;
 
         for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
->>>>>>> MouseListeners_outside_of_the_Panel
 
             for (int j = 0; j < AMMOUNT_OF_CELLS_WIDTH; j++) {
                 Point2D tmpPoint = model2window(POINTS[j][i]);
@@ -810,11 +673,6 @@ public class Panel extends JPanel implements Printable {
         }
     }
 
-<<<<<<< HEAD
-                    Point2D tmpPoint = new Point2D.Double(tmpStartingX + (i % (AMMOUNT_OF_CELLS_WIDTH))*deltaX
-                            , tmpStartingY + ((i / AMMOUNT_OF_CELLS_WIDTH))*deltaY );
-=======
->>>>>>> MouseListeners_outside_of_the_Panel
 
     /**
      * After selecting an area, this method goes through each point and checks if it is in the area
@@ -825,9 +683,6 @@ public class Panel extends JPanel implements Printable {
     public int[] findCells(Shape r){
         ArrayList<Integer> indexes = new ArrayList<>();
 
-<<<<<<< HEAD
-                    POINTS[i] = tmpPoint;
-=======
         int counter = 0;
         for (int i = 0; i < AMMOUNT_OF_CELLS_HEIGHT; i++) {
 
@@ -835,7 +690,6 @@ public class Panel extends JPanel implements Printable {
 
                 if(r.contains(this.areas[j][i])){
                     indexes.add(counter);
->>>>>>> MouseListeners_outside_of_the_Panel
                 }
 
                 counter++;
